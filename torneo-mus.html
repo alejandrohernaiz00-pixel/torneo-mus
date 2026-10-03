@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Torneo de Mus</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='5' fill='%231b4332'/><rect x='4' y='2' width='24' height='28' rx='3' fill='%23f5f0e8'/><rect x='4' y='2' width='24' height='28' rx='3' fill='none' stroke='%23c8a820' stroke-width='.8'/><circle cx='16' cy='16' r='7' fill='none' stroke='%23c8a820' stroke-width='1.2' stroke-dasharray='2.5 1.5'/><circle cx='16' cy='16' r='4.5' fill='%23d4a017' fill-opacity='.3' stroke='%23c8a820' stroke-width='1'/><circle cx='16' cy='16' r='2' fill='%23c8a820'/></svg>">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --g:#1b4332;--gm:#2d6a4f;--gd:#0d2116;
+  --gold:#d4a017;--goldl:#f5c842;--goldd:#a07810;
+  --red:#c0392b;--redl:#e74c3c;
+  --wh:#f0ebe0;--dim:rgba(240,235,224,0.6);
+  --silver:#c0c0c0;--bronze:#cd7f32;
+  --glass:rgba(255,255,255,0.07);--gb:rgba(255,255,255,0.16);
+  --gsh:0 8px 32px rgba(0,0,0,0.45);
+  --indigo:rgba(99,102,241,1);--indigol:#a5b4fc;
+  --violet:#8b5cf6;--violetl:#c4b5fd;
+}
+body{
+  background-color:var(--g);
+  background-image:
+    radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,0.45) 100%),
+    radial-gradient(ellipse at 18% 25%,rgba(45,106,79,0.45) 0%,transparent 45%),
+    radial-gradient(ellipse at 82% 75%,rgba(13,33,22,0.65) 0%,transparent 45%),
+    repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,0.013) 3px,rgba(255,255,255,0.013) 4px),
+    repeating-linear-gradient(90deg,transparent,transparent 3px,rgba(255,255,255,0.013) 3px,rgba(255,255,255,0.013) 4px);
+  min-height:100vh;font-family:Georgia,'Times New Roman',serif;
+  color:var(--wh);padding:16px 16px 64px;overflow-x:clip;
+}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:radial-gradient(circle at 1px 1px,rgba(255,255,255,0.035) 1px,transparent 0);background-size:28px 28px;}
+.wrap{max-width:880px;margin:0 auto;position:relative;z-index:1}
+
+/* ── TABS ── */
+.tab-nav{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-bottom:32px;position:sticky;top:8px;z-index:100;padding:4px 0;}
+.tnav{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border-radius:50px;border:1px solid rgba(255,255,255,.14);background:rgba(0,0,0,.42);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:var(--dim);font-family:inherit;font-size:.8rem;letter-spacing:.11em;text-transform:uppercase;cursor:pointer;transition:all .25s;}
+.tnav.active{background:rgba(212,160,23,.2);border-color:rgba(212,160,23,.52);color:var(--goldl);box-shadow:0 4px 22px rgba(212,160,23,.24),0 2px 8px rgba(0,0,0,.5);text-shadow:0 0 12px rgba(245,200,66,.4);}
+.tnav.active-hist{background:rgba(99,102,241,.18);border-color:rgba(99,102,241,.48);color:var(--indigol);box-shadow:0 4px 22px rgba(99,102,241,.22),0 2px 8px rgba(0,0,0,.5);}
+.tnav:hover:not(.active):not(.active-hist){background:rgba(255,255,255,.09);color:var(--wh)}
+.tab-pane{display:none}.tab-pane.active{display:block}
+
+/* ── STEP HEADER ── */
+.step-hdr{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.step-num{width:28px;height:28px;border-radius:50%;background:rgba(212,160,23,.18);border:1px solid rgba(212,160,23,.4);color:var(--goldl);font-size:.8rem;font-weight:bold;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-hdr h2{font-size:1.2rem;color:var(--goldl);letter-spacing:.07em;text-shadow:0 0 14px rgba(245,200,66,.3);white-space:nowrap}
+.step-hdr .ln{flex:1;height:1px;background:linear-gradient(90deg,rgba(212,160,23,.5),transparent)}
+
+/* ── GLASS CARD ── */
+.gc{background:var(--glass);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--gb);border-radius:16px;box-shadow:var(--gsh),inset 0 1px 0 rgba(255,255,255,0.09);padding:28px;margin-bottom:24px;position:relative;overflow:hidden;transition:box-shadow .3s;}
+.gc::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent)}
+.gc:hover{box-shadow:0 14px 52px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.12)}
+.gc-anim-1{animation:fdU .6s ease .05s both}.gc-anim-2{animation:fdU .6s ease .1s both}
+.gc-anim-3{animation:fdU .6s ease .15s both}.gc-anim-4{animation:fdU .6s ease .2s both}
+.gc-anim-5{animation:fdU .6s ease .25s both}.gc-anim-6{animation:fdU .6s ease .3s both}
+.cc{position:absolute;opacity:.1;pointer-events:none}
+.cc.tl{top:10px;left:10px}.cc.br{bottom:10px;right:10px;transform:rotate(180deg)}
+
+/* ── BUTTONS ── */
+.btn-rst{display:inline-flex;align-items:center;gap:7px;padding:9px 20px;cursor:pointer;font-family:inherit;font-size:.87rem;background:rgba(192,57,43,.12);border:1px solid rgba(192,57,43,.38);border-radius:8px;color:var(--redl);letter-spacing:.05em;transition:all .2s;}
+.btn-rst:hover{background:rgba(192,57,43,.24);border-color:rgba(192,57,43,.6);box-shadow:0 4px 14px rgba(192,57,43,.22)}
+.btn-rst:active{transform:scale(.97)}
+.btn-gold{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;cursor:pointer;font-family:inherit;font-size:.86rem;background:rgba(212,160,23,.12);border:1px solid rgba(212,160,23,.36);border-radius:8px;color:var(--goldl);letter-spacing:.05em;transition:all .2s;white-space:nowrap;flex-shrink:0;}
+.btn-gold:hover{background:rgba(212,160,23,.24);box-shadow:0 4px 14px rgba(212,160,23,.2)}
+.btn-gold:active{transform:scale(.97)}.btn-gold:disabled{opacity:.35;cursor:not-allowed}
+.btn-back{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;cursor:pointer;font-family:inherit;font-size:.85rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.16);border-radius:8px;color:var(--dim);letter-spacing:.04em;transition:all .2s;}
+.btn-back:hover{background:rgba(255,255,255,.12);color:var(--wh)}
+.btn-start{width:100%;padding:16px;cursor:pointer;background:linear-gradient(135deg,rgba(212,160,23,.22),rgba(212,160,23,.1));border:1px solid rgba(212,160,23,.5);border-radius:12px;color:var(--goldl);font-family:inherit;font-size:1.05rem;font-weight:bold;letter-spacing:.1em;text-transform:uppercase;transition:all .25s;}
+.btn-start:hover:not(:disabled){background:linear-gradient(135deg,rgba(212,160,23,.38),rgba(212,160,23,.2));box-shadow:0 6px 28px rgba(212,160,23,.28)}
+.btn-start:disabled{opacity:.35;cursor:not-allowed}
+.btn-elim{width:100%;padding:16px;cursor:pointer;background:linear-gradient(135deg,rgba(99,102,241,.22),rgba(99,102,241,.1));border:1px solid rgba(99,102,241,.45);border-radius:12px;color:var(--indigol);font-family:inherit;font-size:1rem;font-weight:bold;letter-spacing:.1em;text-transform:uppercase;transition:all .25s;}
+.btn-elim:hover:not(:disabled){background:linear-gradient(135deg,rgba(99,102,241,.38),rgba(99,102,241,.2));box-shadow:0 6px 28px rgba(99,102,241,.28)}
+.btn-elim:disabled{opacity:.35;cursor:not-allowed}
+.btn-sm{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;cursor:pointer;font-family:inherit;font-size:.78rem;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);border-radius:7px;color:var(--dim);transition:all .2s;white-space:nowrap;}
+.btn-sm:hover{background:rgba(255,255,255,.12);color:var(--wh)}.btn-sm:active{transform:scale(.96)}
+
+/* ── ROUNDS/BRACKET CARDS ── */
+.rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
+.rcard{background:rgba(0,0,0,.18);border:1px solid var(--gb);border-radius:12px;padding:20px;transition:background .25s,transform .2s}
+.rcard:hover{background:rgba(255,255,255,.06);transform:translateY(-2px)}
+.rcard-final{border-color:rgba(212,160,23,.42)!important;background:rgba(212,160,23,.06)!important}
+.rlabel{font-size:.72rem;text-transform:uppercase;letter-spacing:.15em;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.rlabel::after{content:'';flex:1;height:1px;background:rgba(212,160,23,.28)}
+.bracket-lbl{font-size:.8rem;text-transform:uppercase;letter-spacing:.14em;color:var(--indigol);padding:7px 14px;border-radius:8px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.2);display:inline-block;margin-bottom:14px}
+.trow{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;margin-bottom:5px;background:rgba(0,0,0,.22);transition:background .2s}
+.trow:hover{background:rgba(0,0,0,.3)}
+.tname{font-size:.92rem;font-weight:bold;letter-spacing:.04em;flex:1;line-height:1.3}
+.ta .tname{color:var(--goldl)}.tb .tname{color:var(--silver)}
+.tvs{text-align:center;font-size:.68rem;color:var(--dim);padding:3px 0;letter-spacing:.1em}
+.sctrl{display:flex;align-items:center;gap:4px}
+.sbtn{width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:var(--wh);font-size:.95rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.sbtn:hover{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.35)}.sbtn:active{transform:scale(.88)}
+.sinput{width:52px;padding:5px 6px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.14);border-radius:6px;color:var(--wh);font-size:1.05rem;font-family:inherit;text-align:center;transition:border-color .2s,background .2s;-moz-appearance:textfield}
+.sinput::-webkit-inner-spin-button,.sinput::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.sinput:focus{outline:none;border-color:var(--gold);background:rgba(0,0,0,.4)}
+.sinput.win{border-color:var(--gold);background:rgba(212,160,23,.14);color:var(--goldl);font-weight:bold}
+.sinput.los{border-color:rgba(192,57,43,.45);background:rgba(192,57,43,.09)}
+.rstatus{font-size:.76rem;text-align:center;margin-top:12px;padding:6px 10px;border-radius:6px;min-height:30px;transition:all .3s;color:var(--dim)}
+.rstatus.ok{color:var(--goldl);background:rgba(212,160,23,.1);border:1px solid rgba(212,160,23,.22)}
+.rstatus.err{color:var(--redl);background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.22)}
+
+/* ── TABLES ── */
+.stbl{width:100%;border-collapse:collapse;font-size:.91rem}
+.stbl thead th{padding:10px 13px;text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.13em;color:var(--gold);border-bottom:1px solid rgba(212,160,23,.3);white-space:nowrap}
+.stbl thead th.c{text-align:center}
+.stbl tbody tr{border-bottom:1px solid rgba(255,255,255,.06);transition:background .18s}
+.stbl tbody tr:hover{background:rgba(255,255,255,.05)}
+.stbl tbody tr:last-child{border-bottom:none}
+.stbl tbody td{padding:11px 13px;color:var(--wh)}
+.stbl tbody td.c{text-align:center;font-variant-numeric:tabular-nums}
+.stbl tbody tr.r1{background:rgba(212,160,23,.07)}.stbl tbody tr.r1:hover{background:rgba(212,160,23,.11)}
+.pts{display:inline-block;padding:2px 10px;border-radius:20px;font-weight:bold;font-size:.86rem}
+.pts.p9{background:rgba(212,160,23,.22);color:var(--goldl)}.pts.p6{background:rgba(192,192,192,.16);color:var(--silver)}
+.pts.p3{background:rgba(205,127,50,.2);color:var(--bronze)}.pts.p0{color:var(--dim)}
+.dp{color:#52c41a}.dn{color:var(--redl)}.d0{color:var(--dim)}
+.ptag{display:inline-flex;align-items:center;gap:3px;font-size:.88rem}
+.ptag .amp{color:var(--gold);margin:0 2px}
+.empty{text-align:center;color:var(--dim);padding:32px;font-style:italic}
+
+/* ── PODIUM ── */
+.pod-wrap{display:flex;align-items:flex-end;justify-content:center;gap:14px;padding:16px 0 8px;min-height:200px}
+.pod-pl{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;max-width:190px}
+.pod-av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:bold;border:3px solid;box-shadow:0 4px 18px rgba(0,0,0,.45);transition:transform .35s;cursor:default;width:64px;height:64px}
+.pod-av:hover{transform:scale(1.12)}
+.pl1 .pod-av{width:78px;height:78px;font-size:1.85rem;border-color:var(--gold);background:radial-gradient(circle,rgba(212,160,23,.28),rgba(212,160,23,.06));animation:glow 2.4s ease infinite}
+.pl2 .pod-av{border-color:var(--silver);background:radial-gradient(circle,rgba(192,192,192,.22),rgba(192,192,192,.05))}
+.pl3 .pod-av{border-color:var(--bronze);background:radial-gradient(circle,rgba(205,127,50,.22),rgba(205,127,50,.05))}
+.pod-name{font-size:1rem;font-weight:bold;text-align:center}.pl1 .pod-name{color:var(--goldl);font-size:1.12rem}.pl2 .pod-name{color:var(--silver)}.pl3 .pod-name{color:var(--bronze)}
+.pod-stat{font-size:.74rem;color:var(--dim);text-align:center}
+.pod-bar{width:100%;border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+.pl1 .pod-bar{height:80px;background:linear-gradient(180deg,rgba(212,160,23,.32),rgba(212,160,23,.1));border:1px solid rgba(212,160,23,.4)}
+.pl2 .pod-bar{height:56px;background:linear-gradient(180deg,rgba(192,192,192,.2),rgba(192,192,192,.07));border:1px solid rgba(192,192,192,.28)}
+.pl3 .pod-bar{height:38px;background:linear-gradient(180deg,rgba(205,127,50,.2),rgba(205,127,50,.07));border:1px solid rgba(205,127,50,.28)}
+.pod-pend{text-align:center;color:var(--dim);font-style:italic;padding:44px 0;font-size:.95rem}
+
+/* ── CHAMPION ── */
+.champion-box{text-align:center;padding:28px 20px;margin-bottom:20px;background:linear-gradient(135deg,rgba(212,160,23,.18),rgba(212,160,23,.06));border:1px solid rgba(212,160,23,.45);border-radius:14px;animation:fdU .6s ease both}
+.champion-box .champ-ico{font-size:3rem;margin-bottom:10px;display:block}
+.champion-box .champ-name{font-size:1.6rem;font-weight:bold;color:var(--goldl);text-shadow:0 0 28px rgba(245,200,66,.6);letter-spacing:.04em}
+.champion-box .champ-lbl{font-size:.72rem;color:var(--dim);letter-spacing:.2em;text-transform:uppercase;margin-top:4px}
+
+/* ── SETUP FORMS ── */
+.blab{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.14em;color:var(--gold);margin-bottom:8px}
+.txtin{width:100%;padding:10px 14px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.14);border-radius:8px;color:var(--wh);font-family:inherit;font-size:.9rem;transition:border-color .2s}
+.txtin::placeholder{color:var(--dim)}.txtin:focus{outline:none;border-color:var(--gold)}
+.selin{width:100%;padding:8px 28px 8px 12px;background:rgba(0,0,0,.3) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='7' viewBox='0 0 11 7'%3E%3Cpath d='M1 1l4.5 4.5L10 1' stroke='%23d4a017' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 10px center;border:1px solid rgba(255,255,255,.14);border-radius:8px;color:var(--wh);font-family:inherit;font-size:.87rem;cursor:pointer;-webkit-appearance:none;appearance:none;transition:border-color .2s;}
+.selin:focus{outline:none;border-color:var(--gold)}.selin option{background:#1b4332;color:#f0ebe0}
+.num-in{width:72px;padding:8px 10px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.14);border-radius:8px;color:var(--wh);font-family:inherit;font-size:1rem;text-align:center;-moz-appearance:textfield;transition:border-color .2s}
+.num-in::-webkit-inner-spin-button,.num-in::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.num-in:focus{outline:none;border-color:var(--gold)}
+.inrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.pchip{display:inline-flex;align-items:center;gap:4px;padding:4px 8px 4px 11px;margin:3px;background:rgba(212,160,23,.1);border:1px solid rgba(212,160,23,.26);border-radius:20px;font-size:.83rem;color:var(--goldl);animation:fdI .3s ease}
+.pchip .px{width:15px;height:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);cursor:pointer;font-size:.68rem;color:rgba(240,235,224,.5);transition:all .15s;margin-left:3px}
+.pchip .px:hover{background:rgba(192,57,43,.3);color:var(--redl)}
+.plist{min-height:34px;padding:2px 0}
+.pair-chip{display:inline-flex;align-items:center;gap:8px;padding:7px 10px 7px 14px;margin:4px;background:rgba(99,102,241,.1);border:1px solid rgba(99,102,241,.28);border-radius:24px;font-size:.84rem;color:var(--violetl);animation:fdI .3s ease}
+.pair-chip .pair-names{font-weight:bold}
+.pair-chip .pair-vs{color:rgba(196,181,253,.45);font-size:.7rem;margin:0 3px}
+.pair-chip .px{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.08);cursor:pointer;font-size:.68rem;color:rgba(196,181,253,.5);transition:all .15s;margin-left:2px}
+.pair-chip .px:hover{background:rgba(192,57,43,.3);color:var(--redl)}
+.warn{font-size:.76rem;color:rgba(245,200,66,.75);padding:6px 12px;border-radius:6px;margin-bottom:10px;background:rgba(212,160,23,.08);border:1px solid rgba(212,160,23,.18);display:none}
+.info-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.itag{font-size:.78rem;color:var(--dim);padding:4px 12px;border-radius:20px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09)}
+.itag strong{color:var(--goldl)}
+.mt-topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:10px;flex-wrap:wrap}
+.mt-phdr{text-align:center;padding:20px 20px 22px;margin-bottom:4px}
+.mt-phdr h1{font-size:clamp(1.8rem,5vw,3rem);font-weight:bold;color:var(--goldl);letter-spacing:.04em;margin-bottom:8px;text-shadow:0 0 22px rgba(245,200,66,.45),0 2px 8px rgba(0,0,0,.8)}
+.mt-phdr .sub{font-size:.82rem;color:var(--dim);letter-spacing:.14em}
+.setup-hint{text-align:center;color:var(--dim);font-style:italic;font-size:.88rem;padding:12px 0 8px}
+.mitem{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;margin-bottom:5px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.07);animation:fdU .3s ease}
+.mitem .mi-n{flex:1;font-size:.87rem}.mitem .mi-ta{color:var(--goldl);font-weight:bold}.mitem .mi-sep{color:var(--dim);margin:0 4px;font-size:.75rem}.mitem .mi-tb{color:var(--silver);font-weight:bold}
+.mitem .mi-idx{font-size:.68rem;letter-spacing:.1em;color:var(--dim);text-transform:uppercase;flex-shrink:0;margin-right:4px}
+.mitem .xbtn{width:22px;height:22px;border-radius:50%;flex-shrink:0;border:1px solid rgba(192,57,43,.28);background:rgba(192,57,43,.08);color:var(--redl);cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.mitem .xbtn:hover{background:rgba(192,57,43,.22)}
+.mb-form{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;padding:14px;background:rgba(0,0,0,.18);border-radius:10px;margin-bottom:10px}
+.mb-team{display:flex;flex-direction:column;gap:6px;flex:1;min-width:130px}
+.mb-vs{color:var(--dim);font-size:.72rem;letter-spacing:.12em;flex-shrink:0;padding-bottom:8px}
+
+/* ── PAIR MODE TOGGLE ── */
+.mode-toggle{display:flex;gap:0;border:1px solid rgba(255,255,255,.14);border-radius:10px;overflow:hidden;width:fit-content;margin-bottom:16px}
+.mode-btn{padding:9px 20px;font-family:inherit;font-size:.82rem;letter-spacing:.08em;background:rgba(0,0,0,.18);color:var(--dim);cursor:pointer;transition:all .2s;border:none;text-transform:uppercase}
+.mode-btn:first-child{border-right:1px solid rgba(255,255,255,.1)}
+.mode-btn.active{background:rgba(212,160,23,.18);color:var(--goldl);font-weight:bold}
+.pair-builder{background:rgba(0,0,0,.14);border-radius:10px;padding:14px;margin-top:10px;border:1px solid rgba(99,102,241,.18)}
+.pair-builder-label{font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:var(--indigol);margin-bottom:10px}
+
+/* ── FORMAT CARDS ── */
+.fmt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:16px}
+.fmt-card{padding:18px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.16);cursor:pointer;transition:all .2s;text-align:center}
+.fmt-card:hover{border-color:rgba(212,160,23,.3);background:rgba(212,160,23,.05)}
+.fmt-card.sel{border-color:rgba(212,160,23,.55);background:rgba(212,160,23,.1)}
+.fmt-ico{font-size:2rem;margin-bottom:8px}
+.fmt-name{font-size:.95rem;font-weight:bold;color:var(--wh);margin-bottom:5px}
+.fmt-card.sel .fmt-name{color:var(--goldl)}
+.fmt-desc{font-size:.72rem;color:var(--dim);line-height:1.4;margin-bottom:6px}
+.fmt-badge{font-size:.66rem;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,.06);color:rgba(240,235,224,.4);display:inline-block}
+.fmt-card.sel .fmt-badge{background:rgba(212,160,23,.12);color:rgba(245,200,66,.6)}
+.fmt-sub{margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06)}
+.sub-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.sub-lbl{font-size:.82rem;color:var(--dim);white-space:nowrap}
+
+/* ── GRUPOS ── */
+.group-preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}
+.gp-card{background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px}
+.gp-name{font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:var(--gold);margin-bottom:8px}
+.gp-team{font-size:.8rem;color:var(--wh);padding:4px 8px;border-radius:6px;margin-bottom:3px;background:rgba(255,255,255,.05);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.group-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.gtab{padding:7px 16px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.18);color:var(--dim);font-family:inherit;font-size:.78rem;cursor:pointer;transition:all .2s;letter-spacing:.06em}
+.gtab.active{border-color:rgba(212,160,23,.45);background:rgba(212,160,23,.12);color:var(--goldl)}
+.group-done-badge{display:inline-flex;align-items:center;gap:5px;font-size:.72rem;padding:3px 10px;border-radius:10px;background:rgba(82,196,26,.12);border:1px solid rgba(82,196,26,.28);color:#52c41a;margin-left:8px}
+
+/* ── HISTÓRICO ── */
+.hist-topbar{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:28px;flex-wrap:wrap;padding-top:8px}
+.hist-main-h{font-size:1.55rem;font-weight:bold;color:var(--indigol);letter-spacing:.05em;margin-bottom:4px}
+.hist-main-sub{font-size:.78rem;color:var(--dim);letter-spacing:.1em}
+.btn-res{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;cursor:pointer;font-family:inherit;font-size:.84rem;letter-spacing:.1em;background:rgba(99,102,241,.14);border:1px solid rgba(99,102,241,.38);border-radius:8px;color:var(--indigol);transition:all .25s;flex-shrink:0;text-transform:uppercase;}
+.btn-res:hover{background:rgba(99,102,241,.24)}.btn-res.open{background:rgba(99,102,241,.24);border-color:rgba(99,102,241,.6)}
+.hist-chev{transition:transform .3s ease;display:inline-block;font-size:.72rem;margin-left:2px}.hist-chev.open{transform:rotate(180deg)}
+.res-panel{overflow:hidden;max-height:0;transition:max-height .5s cubic-bezier(.4,0,.2,1);margin-bottom:0}.res-panel.open{max-height:4000px}
+.res-panel .gc{border-color:rgba(99,102,241,.22)}.res-panel .stitle h2{color:var(--indigol);text-shadow:none}.res-panel .stitle .ln{background:linear-gradient(90deg,rgba(99,102,241,.5),transparent)}
+.hist-form{display:flex;gap:14px;align-items:stretch;flex-wrap:wrap;margin-bottom:14px}
+.hist-team-blk{flex:1;min-width:175px;background:rgba(0,0,0,.16);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:9px}
+.hist-team-blk.blk-a{border-left:2px solid rgba(212,160,23,.3)}.hist-team-blk.blk-b{border-left:2px solid rgba(192,192,192,.2)}
+.hist-mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;flex-shrink:0;padding:6px}
+.hist-vs-lbl{color:var(--dim);font-size:.7rem;letter-spacing:.18em}
+.hist-score-row{display:flex;align-items:center;gap:8px;margin-top:2px;padding-top:8px;border-top:1px solid rgba(255,255,255,.06)}
+.hist-score-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.12em;color:var(--gold)}
+.hist-date-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+input[type="date"]{color-scheme:dark}
+.hmatch{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:8px;margin-bottom:6px;background:rgba(0,0,0,.18);border:1px solid rgba(255,255,255,.07);transition:background .18s;animation:fdU .3s ease;flex-wrap:wrap}
+.hmatch:hover{background:rgba(255,255,255,.05)}
+.hm-date{font-size:.7rem;color:var(--dim);letter-spacing:.06em;white-space:nowrap;flex-shrink:0;min-width:32px;text-align:center}
+.hm-body{flex:1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-width:0}
+.hm-ta{font-size:.88rem;font-weight:bold;color:var(--goldl)}.hm-ta.loser{color:rgba(240,235,224,.4);font-weight:normal}
+.hm-tb{font-size:.88rem;font-weight:bold;color:var(--silver)}.hm-tb.loser{color:rgba(240,235,224,.4);font-weight:normal}
+.hm-score{font-size:.9rem;font-weight:bold;letter-spacing:.06em;padding:3px 12px;border-radius:6px;white-space:nowrap;flex-shrink:0;background:rgba(212,160,23,.1);border:1px solid rgba(212,160,23,.22);color:var(--goldl)}
+.hm-score.draw{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);color:var(--dim)}
+.hm-xbtn{width:22px;height:22px;border-radius:50%;flex-shrink:0;border:1px solid rgba(192,57,43,.28);background:rgba(192,57,43,.08);color:var(--redl);cursor:pointer;font-size:.82rem;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.hm-xbtn:hover{background:rgba(192,57,43,.22)}
+.hm-count{font-size:.74rem;color:var(--dim);flex-shrink:0;white-space:nowrap}
+.hist-stitle h2{color:var(--indigol)!important;text-shadow:0 0 14px rgba(99,102,241,.35)!important}
+.hist-stitle .ln{background:linear-gradient(90deg,rgba(99,102,241,.5),transparent)!important}
+.emp{color:rgba(240,235,224,.45)}
+.game-detail-section{margin-top:14px;border-top:1px solid rgba(255,255,255,.06);padding-top:12px}
+.game-detail-title{font-size:.69rem;text-transform:uppercase;letter-spacing:.13em;color:var(--gold);margin-bottom:10px;opacity:.8}
+.game-legend{display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(0,0,0,.14);border-radius:7px;margin-bottom:8px;flex-wrap:wrap}
+.gl-a{font-size:.73rem;font-weight:bold;color:var(--goldl);flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gl-sep{font-size:.65rem;color:var(--dim);letter-spacing:.1em;flex-shrink:0}
+.gl-b{font-size:.73rem;font-weight:bold;color:var(--silver);flex:1;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gs-a{border-left:2px solid rgba(212,160,23,.55)!important}
+.gs-b{border-left:2px solid rgba(192,192,192,.4)!important}
+.game-rows{display:flex;flex-direction:column;gap:6px}
+.game-row{display:flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(0,0,0,.14);border-radius:7px}
+.game-row-n{font-size:.7rem;color:var(--dim);letter-spacing:.07em;min-width:56px;flex-shrink:0}
+.game-sinput{width:44px!important}
+.game-dash{color:var(--dim);font-size:.9rem;flex-shrink:0;padding:0 2px}
+.hm-gdet{display:none;width:100%;padding-top:7px;flex-wrap:wrap;gap:4px}
+.hm-gdet.open{display:flex;animation:fdI .2s ease}
+.game-chip{font-size:.69rem;padding:2px 8px;border-radius:10px;background:rgba(212,160,23,.09);border:1px solid rgba(212,160,23,.18);color:rgba(245,200,66,.8)}
+.hm-gbtn{font-size:.65rem;padding:2px 8px;border-radius:10px;border:1px solid rgba(212,160,23,.22);background:rgba(212,160,23,.07);color:var(--gold);cursor:pointer;transition:all .15s;flex-shrink:0;white-space:nowrap;line-height:1.6}
+.hm-gbtn:hover{background:rgba(212,160,23,.18)}
+
+/* ── PER-GAME IN MATCH CARDS ── */
+.card-games-btn{width:100%;margin-top:10px;padding:6px 12px;background:rgba(0,0,0,.15);border:1px dashed rgba(212,160,23,.2);border-radius:7px;color:rgba(245,200,66,.55);font-family:inherit;font-size:.7rem;letter-spacing:.1em;cursor:pointer;transition:all .2s;text-align:center}
+.card-games-btn:hover{background:rgba(212,160,23,.07);color:var(--goldl);border-color:rgba(212,160,23,.35)}
+.card-games-section{padding-top:8px}
+.stitle{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+.stitle h2{font-size:1.35rem;color:var(--goldl);letter-spacing:.08em;text-shadow:0 0 14px rgba(245,200,66,.35);white-space:nowrap}
+.stitle .ico{flex-shrink:0;display:flex}.stitle .ln{flex:1;height:1px;background:linear-gradient(90deg,rgba(212,160,23,.6),transparent)}
+.hist-stitle{margin-bottom:22px;display:flex;align-items:center;gap:12px}
+
+/* ── ANIMATIONS ── */
+@keyframes fdD{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fdU{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fdI{from{opacity:0}to{opacity:1}}
+@keyframes glow{0%,100%{box-shadow:0 0 28px rgba(212,160,23,.45),0 4px 18px rgba(0,0,0,.5)}50%{box-shadow:0 0 42px rgba(212,160,23,.72),0 4px 18px rgba(0,0,0,.5)}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  body{padding:10px 10px 44px}.gc{padding:16px}.rgrid{grid-template-columns:1fr}
+  .pod-av{width:52px;height:52px;font-size:1.2rem}.pl1 .pod-av{width:64px;height:64px;font-size:1.5rem}
+  .stbl{font-size:.8rem}.stbl thead th,.stbl tbody td{padding:8px 7px}
+  .tnav{padding:8px 14px;font-size:.74rem;gap:5px}
+  .mb-form{flex-direction:column}.mb-vs{padding-bottom:0;align-self:center}
+  .hist-form{flex-direction:column}.hist-mid{flex-direction:row;padding:0}.hist-team-blk{min-width:unset}
+  .fmt-grid{grid-template-columns:1fr}.group-preview-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav class="tab-nav">
+  <button class="tnav active" id="tnav-mt" onclick="switchTab('mt')"><span id="tnav-mt-ico"></span>Torneo</button>
+  <button class="tnav" id="tnav-hist" onclick="switchTab('hist')"><span id="tnav-hist-ico"></span>Histórico</button>
+</nav>
+
+<!-- ══ TAB TORNEO ══ -->
+<div id="tab-mt" class="tab-pane active">
+
+<!-- SETUP -->
+<div id="mt-setup">
+
+  <!-- ① NOMBRE -->
+  <div class="gc gc-anim-1">
+    <div class="step-hdr"><div class="step-num">1</div><h2>Nombre del Torneo</h2><div class="ln"></div></div>
+    <input type="text" id="mt-tname" class="txtin" placeholder="Torneo de Las Cuevas…" oninput="MT.name=this.value;mtSave()">
+  </div>
+
+  <!-- ② JUGADORES Y PAREJAS -->
+  <div class="gc gc-anim-2">
+    <div class="step-hdr"><div class="step-num">2</div><h2>Jugadores y Parejas</h2><div class="ln"></div></div>
+
+    <!-- Añadir jugadores -->
+    <div class="inrow">
+      <input type="text" id="mt-pname" class="txtin" placeholder="Nombre del jugador" onkeydown="if(event.key==='Enter'){event.preventDefault();mtAddPlayer()}">
+      <button class="btn-gold" onclick="mtAddPlayer()">+ Añadir</button>
+    </div>
+    <div id="mt-pwarn" class="warn"></div>
+    <div class="plist" id="mt-plist" style="margin-bottom:18px"></div>
+
+    <!-- Toggle parejas -->
+    <div class="blab" style="margin-bottom:8px">Tipo de parejas</div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="mode-libre" onclick="mtSetPairMode('libre')">&#9681; Libres</button>
+      <button class="mode-btn" id="mode-fija" onclick="mtSetPairMode('fija')">&#9679; Fijas</button>
+    </div>
+    <div style="font-size:.78rem;color:var(--dim);margin-bottom:8px" id="mode-desc">Las parejas se forman libremente cada ronda</div>
+
+    <!-- Pairing UI (solo para fija) -->
+    <div id="pair-builder-section" style="display:none">
+      <div class="pair-builder">
+        <div class="pair-builder-label">&#9679; Crear pareja</div>
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <div style="flex:1;min-width:100px">
+            <select id="pair-p1" class="selin"><option value="">— Jugador 1 —</option></select>
+          </div>
+          <div style="color:var(--dim);font-size:.72rem;padding-bottom:10px">&amp;</div>
+          <div style="flex:1;min-width:100px">
+            <select id="pair-p2" class="selin"><option value="">— Jugador 2 —</option></select>
+          </div>
+          <button class="btn-gold" onclick="mtAddPair()" style="flex-shrink:0">+ Pareja</button>
+        </div>
+      </div>
+      <div id="pair-warn" class="warn"></div>
+      <div style="margin-top:8px" id="pair-list"></div>
+      <div id="unpaired-warn" style="display:none;font-size:.76rem;color:rgba(245,200,66,.7);padding:5px 10px;margin-top:6px;border-radius:6px;background:rgba(212,160,23,.07);border:1px solid rgba(212,160,23,.16)"></div>
+    </div>
+  </div>
+
+  <!-- ③ FORMATO (solo para fija, con ≥2 equipos) -->
+  <div class="gc gc-anim-3" id="formato-section" style="display:none">
+    <div class="step-hdr"><div class="step-num">3</div><h2>Formato del Torneo</h2><div class="ln"></div></div>
+
+    <div id="fmt-suggestion" style="font-size:.8rem;color:rgba(245,200,66,.65);padding:7px 12px;border-radius:7px;background:rgba(212,160,23,.07);border:1px solid rgba(212,160,23,.14);margin-bottom:14px"></div>
+
+    <div class="fmt-grid">
+      <div class="fmt-card sel" id="fmt-liguilla" onclick="mtSetFormat('liguilla')">
+        <div class="fmt-ico">🏆</div>
+        <div class="fmt-name">Liguilla</div>
+        <div class="fmt-desc">Todos contra todos · Los mejores pasan a eliminatoria</div>
+        <div class="fmt-badge">Ideal para 4–8 equipos</div>
+      </div>
+      <div class="fmt-card" id="fmt-eliminatoria" onclick="mtSetFormat('eliminatoria')">
+        <div class="fmt-ico">⚡</div>
+        <div class="fmt-name">Eliminatoria directa</div>
+        <div class="fmt-desc">Cruces directos desde el inicio · El que pierde, fuera</div>
+        <div class="fmt-badge">Cualquier número de equipos</div>
+      </div>
+      <div class="fmt-card" id="fmt-grupos" onclick="mtSetFormat('grupos')">
+        <div class="fmt-ico">🏟️</div>
+        <div class="fmt-name">Por grupos</div>
+        <div class="fmt-desc">Grupos con liguilla interna · Los mejores de cada grupo pasan</div>
+        <div class="fmt-badge">Ideal para 8+ equipos</div>
+      </div>
+    </div>
+
+    <!-- Sub-opciones Liguilla -->
+    <div id="fmt-sub-liguilla" class="fmt-sub">
+      <div class="sub-row">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="lig-knockout-chk" onchange="MT.liguillaKnockout=this.checked;mtSave();mtUpdateLiguillaOpts()" style="width:16px;height:16px;accent-color:var(--gold)">
+          <span class="sub-lbl">Añadir eliminatoria tras la liguilla</span>
+        </label>
+      </div>
+      <div id="lig-bracket-opts" style="display:none">
+        <div class="sub-row" style="margin-left:24px">
+          <span class="sub-lbl">Equipos que pasan al bracket:</span>
+          <label class="br-pick" id="brp-4" onclick="MT.liguillaKnockoutSize=4;mtSave();mtHiPick('brp',4)" style="cursor:pointer;padding:5px 12px;border-radius:7px;border:1px solid rgba(212,160,23,.35);background:rgba(212,160,23,.12);color:var(--goldl);font-size:.8rem">Top 4</label>
+          <label class="br-pick" id="brp-8" onclick="MT.liguillaKnockoutSize=8;mtSave();mtHiPick('brp',8)" style="cursor:pointer;padding:5px 12px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.15);color:var(--dim);font-size:.8rem">Top 8</label>
+          <label class="br-pick" id="brp-16" onclick="MT.liguillaKnockoutSize=16;mtSave();mtHiPick('brp',16)" style="cursor:pointer;padding:5px 12px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.15);color:var(--dim);font-size:.8rem">Top 16</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sub-opciones Eliminatoria -->
+    <div id="fmt-sub-eliminatoria" class="fmt-sub" style="display:none">
+      <div class="sub-row">
+        <span class="sub-lbl">Tamaño del cuadro:</span>
+        <label class="br-pick" id="elp-4" onclick="MT.elimSize=4;mtSave();mtHiPick('elp',4)" style="cursor:pointer;padding:5px 12px;border-radius:7px;border:1px solid rgba(212,160,23,.35);background:rgba(212,160,23,.12);color:var(--goldl);font-size:.8rem">4</label>
+        <label class="br-pick" id="elp-8" onclick="MT.elimSize=8;mtSave();mtHiPick('elp',8)" style="cursor:pointer;padding:5px 12px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.15);color:var(--dim);font-size:.8rem">8</label>
+        <label class="br-pick" id="elp-16" onclick="MT.elimSize=16;mtSave();mtHiPick('elp',16)" style="cursor:pointer;padding:5px 12px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.15);color:var(--dim);font-size:.8rem">16</label>
+        <label class="br-pick" id="elp-32" onclick="MT.elimSize=32;mtSave();mtHiPick('elp',32)" style="cursor:pointer;padding:5px 12px;border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.15);color:var(--dim);font-size:.8rem">32</label>
+      </div>
+      <div style="font-size:.74rem;color:var(--dim);margin-top:6px">Los equipos se sortearán aleatoriamente al iniciar</div>
+    </div>
+
+    <!-- Sub-opciones Grupos -->
+    <div id="fmt-sub-grupos" class="fmt-sub" style="display:none">
+      <div class="sub-row" style="margin-bottom:10px">
+        <span class="sub-lbl">Número de grupos:</span>
+        <input type="number" id="grupos-n" class="num-in" value="2" min="2" max="16" oninput="MT.numGroups=Math.max(2,parseInt(this.value)||2);mtSave();mtRenderGroupPreview()">
+        <span class="sub-lbl">Clasifican por grupo:</span>
+        <input type="number" id="grupos-top" class="num-in" value="2" min="1" max="8" oninput="MT.topPerGroup=Math.max(1,parseInt(this.value)||1);mtSave();mtRenderGroupPreview()">
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <button class="btn-sm" onclick="mtShuffleGroups()">&#9632; Aleatorizar grupos</button>
+        <span style="font-size:.72rem;color:var(--dim)" id="grp-info"></span>
+      </div>
+      <div id="grp-preview" class="group-preview-grid"></div>
+    </div>
+  </div>
+
+  <!-- ③ RONDAS MANUALES (solo para libre) -->
+  <div class="gc gc-anim-3" id="rondas-libre-section">
+    <div class="step-hdr"><div class="step-num">3</div><h2>Rondas</h2><div class="ln"></div></div>
+    <label class="blab" style="margin-bottom:10px">Añadir enfrentamiento</label>
+    <div class="mb-form">
+      <div class="mb-team">
+        <label class="blab" style="color:var(--goldl)">Equipo A</label>
+        <select id="mt-a1" class="selin"><option value="">— Jugador 1 —</option></select>
+        <select id="mt-a2" class="selin"><option value="">— Jugador 2 (opc.) —</option></select>
+      </div>
+      <div class="mb-vs">VS</div>
+      <div class="mb-team">
+        <label class="blab" style="color:var(--silver)">Equipo B</label>
+        <select id="mt-b1" class="selin"><option value="">— Jugador 1 —</option></select>
+        <select id="mt-b2" class="selin"><option value="">— Jugador 2 (opc.) —</option></select>
+      </div>
+    </div>
+    <div id="mt-mwarn" class="warn"></div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+      <button class="btn-gold" onclick="mtAddMatchup()">+ Añadir ronda</button>
+    </div>
+    <div id="mt-mlist"></div>
+    <!-- Bracket option for libre -->
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.06)">
+      <div class="sub-row">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="libre-knockout-chk" onchange="MT.liguillaKnockout=this.checked;mtSave()" style="width:16px;height:16px;accent-color:var(--gold)">
+          <span class="sub-lbl">Añadir eliminatoria al terminar las rondas</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ AJUSTES DEL JUEGO -->
+  <div class="gc gc-anim-4">
+    <div class="step-hdr"><div class="step-num" id="step-num-ajustes">4</div><h2>Ajustes del Juego</h2><div class="ln"></div></div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap">
+      <div>
+        <label class="blab">Juegos por partida</label>
+        <div class="sub-row" style="margin-bottom:0">
+          <span class="sub-lbl">Primero a</span>
+          <input type="number" id="mt-winto" class="num-in" value="5" min="1" max="20" oninput="MT.winTo=Math.max(1,parseInt(this.value)||1);mtSave()">
+          <span class="sub-lbl">juegos gana</span>
+        </div>
+      </div>
+      <div>
+        <label class="blab">Tantos por juego</label>
+        <div class="sub-row" style="margin-bottom:0">
+          <span class="sub-lbl">Cada juego a</span>
+          <input type="number" id="mt-tantosto" class="num-in" value="40" min="1" max="999" oninput="MT.tantosTo=Math.max(1,parseInt(this.value)||1);mtSave()">
+          <span class="sub-lbl">tantos</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ⑤ INICIAR -->
+  <div class="gc gc-anim-5" style="text-align:center">
+    <div class="info-tags" id="mt-info" style="justify-content:center"></div>
+    <button class="btn-start" id="mt-startbtn" onclick="mtStart()" disabled>&#9654; Iniciar Torneo</button>
+    <p id="mt-starthint" class="setup-hint"></p>
+  </div>
+
+</div><!-- /mt-setup -->
+
+<!-- PLAYING PHASE -->
+<div id="mt-playing" style="display:none">
+  <div class="mt-topbar">
+    <button class="btn-back" onclick="mtBackToSetup()">&#8592; Configuración</button>
+    <button class="btn-rst" onclick="mtResetResults()">&#9851; Reiniciar resultados</button>
+  </div>
+  <div class="mt-phdr">
+    <h1 id="mt-title"></h1>
+    <p id="mt-meta" class="sub"></p>
+  </div>
+
+  <!-- Liguilla (libre o fija+liguilla) -->
+  <div id="play-liguilla" style="display:none">
+    <div class="gc gc-anim-1">
+      <div class="stitle"><span class="ico" id="mt-ico-r"></span><h2>Liguilla</h2><div class="ln"></div></div>
+      <div class="rgrid" id="mt-rg"></div>
+    </div>
+    <div class="gc gc-anim-2">
+      <div class="stitle"><span class="ico" id="mt-ico-p"></span><h2>Clasificación por Parejas</h2><div class="ln"></div></div>
+      <div id="mt-pairs"></div>
+    </div>
+    <div class="gc gc-anim-3" id="mt-indiv-gc">
+      <div class="stitle"><span class="ico" id="mt-ico-i"></span><h2>Clasificación Individual</h2><div class="ln"></div></div>
+      <div id="mt-indiv"></div>
+    </div>
+    <div class="gc gc-anim-4" id="mt-podio-gc">
+      <div class="stitle"><span class="ico" id="mt-ico-pod"></span><h2>Podio</h2><div class="ln"></div></div>
+      <div id="mt-podio"></div>
+    </div>
+  </div>
+
+  <!-- Grupos -->
+  <div id="play-grupos" style="display:none">
+    <div class="gc gc-anim-1">
+      <div class="stitle"><span class="ico" id="mt-ico-grp"></span><h2>Fase de Grupos</h2><div class="ln"></div></div>
+      <div class="group-tabs" id="grp-tabs"></div>
+      <div id="grp-active-content"></div>
+    </div>
+  </div>
+
+  <!-- Bracket (liguilla con knockout, grupos, o eliminatoria directa) -->
+  <div id="play-bracket" class="gc gc-anim-5" style="display:none">
+    <div class="stitle"><span class="ico" id="mt-ico-bracket"></span><h2>Fase Eliminatoria</h2><div class="ln"></div></div>
+    <div id="mt-champion-box" style="display:none"></div>
+    <div id="mt-bracket-rounds"></div>
+    <div id="mt-bracket-initwrap">
+      <button class="btn-elim" id="mt-bracket-initbtn" onclick="mtInitBracket()" disabled>&#9876; Generar Eliminatoria</button>
+      <p class="setup-hint" id="mt-bracket-hint"></p>
+    </div>
+  </div>
+</div><!-- /mt-playing -->
+</div><!-- /tab-mt -->
+
+<!-- ══ TAB HISTÓRICO ══ -->
+<div id="tab-hist" class="tab-pane">
+  <div class="hist-topbar">
+    <div><h2 class="hist-main-h">Histórico de Partidas</h2><p class="hist-main-sub">Registro libre · Estadísticas acumuladas</p></div>
+    <button class="btn-res" id="hist-resbtn" onclick="histToggleResults()"><span id="hist-res-ico"></span>Resultados<span class="hist-chev" id="hist-chev">&#9660;</span></button>
+  </div>
+  <div class="res-panel" id="hist-res-panel">
+    <div class="gc">
+      <div class="stitle hist-stitle"><span class="ico" id="hist-ico-p"></span><h2>Clasificación por Parejas</h2><div class="ln"></div></div>
+      <div id="hist-pairs"></div>
+    </div>
+    <div class="gc">
+      <div class="stitle hist-stitle"><span class="ico" id="hist-ico-i"></span><h2>Clasificación Individual</h2><div class="ln"></div></div>
+      <div id="hist-indiv"></div>
+    </div>
+    <div class="gc">
+      <div class="stitle hist-stitle"><span class="ico" id="hist-ico-pod"></span><h2>Podio</h2><div class="ln"></div></div>
+      <div id="hist-podio"></div>
+    </div>
+  </div>
+  <div class="gc gc-anim-1">
+    <div class="cc tl" id="hc1"></div><div class="cc br" id="hc2"></div>
+    <div class="stitle"><span class="ico" id="hist-ico-form"></span><h2>Registrar Partida</h2><div class="ln"></div></div>
+    <datalist id="hist-dl"></datalist>
+    <div class="hist-date-row">
+      <label class="blab" style="margin-bottom:0;white-space:nowrap">Fecha</label>
+      <input type="date" id="hist-date" class="txtin" style="width:auto;padding:7px 12px;flex-shrink:0">
+    </div>
+    <div class="hist-form">
+      <div class="hist-team-blk blk-a">
+        <label class="blab" style="color:var(--goldl);margin-bottom:4px">Equipo A</label>
+        <input type="text" id="hist-a1" list="hist-dl" class="txtin" placeholder="Jugador 1" autocomplete="off">
+        <input type="text" id="hist-a2" list="hist-dl" class="txtin" placeholder="Jugador 2 (opcional)" autocomplete="off">
+        <div class="hist-score-row">
+          <span class="hist-score-lbl">Juegos:</span>
+          <div class="sctrl">
+            <button class="sbtn" onclick="hAdj('hist-sA',-1)">&#8722;</button>
+            <input type="number" id="hist-sA" class="sinput" value="5" min="0" max="99" oninput="histUpdateGameRows()">
+            <button class="sbtn" onclick="hAdj('hist-sA',1)">&#43;</button>
+          </div>
+        </div>
+      </div>
+      <div class="hist-mid"><div class="hist-vs-lbl">VS</div></div>
+      <div class="hist-team-blk blk-b">
+        <label class="blab" style="color:var(--silver);margin-bottom:4px">Equipo B</label>
+        <input type="text" id="hist-b1" list="hist-dl" class="txtin" placeholder="Jugador 1" autocomplete="off">
+        <input type="text" id="hist-b2" list="hist-dl" class="txtin" placeholder="Jugador 2 (opcional)" autocomplete="off">
+        <div class="hist-score-row">
+          <span class="hist-score-lbl">Juegos:</span>
+          <div class="sctrl">
+            <button class="sbtn" onclick="hAdj('hist-sB',-1)">&#8722;</button>
+            <input type="number" id="hist-sB" class="sinput" value="3" min="0" max="99" oninput="histUpdateGameRows()">
+            <button class="sbtn" onclick="hAdj('hist-sB',1)">&#43;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="game-detail-section" id="hist-game-section" style="display:none">
+      <div class="game-detail-title">&#8627; Tanteo de cada juego (opcional)</div>
+      <div class="game-rows" id="hist-game-rows"></div>
+    </div>
+    <div id="hist-fwarn" class="warn"></div>
+    <div style="display:flex;justify-content:flex-end"><button class="btn-gold" onclick="histAddMatch()">+ Registrar Partida</button></div>
+  </div>
+  <div class="gc gc-anim-2">
+    <div class="cc tl" id="hc3"></div><div class="cc br" id="hc4"></div>
+    <div class="stitle"><span class="ico" id="hist-ico-list"></span><h2>Partidas Registradas</h2><div class="ln"></div><span class="hm-count" id="hist-count"></span></div>
+    <div id="hist-list"></div>
+  </div>
+</div><!-- /tab-hist -->
+</div><!-- /wrap -->
+
+<script>
+/* ═══ SVG ═══ */
+function svgOros(sz,c){c=c||'#d4a017';return`<svg width="${sz}" height="${sz}" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="12.5" stroke="${c}" stroke-width="1.4" stroke-dasharray="2.5 1.8"/><circle cx="16" cy="16" r="8.5" fill="${c}" fill-opacity=".18" stroke="${c}" stroke-width="1.1"/><circle cx="16" cy="16" r="5" fill="${c}" fill-opacity=".45"/><circle cx="16" cy="16" r="2.2" fill="${c}" fill-opacity=".8"/><line x1="16" y1="1.5" x2="16" y2="5.5" stroke="${c}" stroke-width="1.4" stroke-linecap="round"/><line x1="16" y1="26.5" x2="16" y2="30.5" stroke="${c}" stroke-width="1.4" stroke-linecap="round"/><line x1="1.5" y1="16" x2="5.5" y2="16" stroke="${c}" stroke-width="1.4" stroke-linecap="round"/><line x1="26.5" y1="16" x2="30.5" y2="16" stroke="${c}" stroke-width="1.4" stroke-linecap="round"/></svg>`}
+function svgCopas(sz,c){c=c||'#c0392b';return`<svg width="${sz}" height="${sz}" viewBox="0 0 32 32" fill="none"><path d="M7 5 C7 5 5 5 5 10 C5 16 10.5 19 16 21.5 C21.5 19 27 16 27 10 C27 5 25 5 25 5 Z" fill="${c}" fill-opacity=".22" stroke="${c}" stroke-width="1.5" stroke-linejoin="round"/><path d="M13.5 21.5 L13.5 25.5 L11 26.5 L21 26.5 L18.5 25.5 L18.5 21.5" fill="${c}" fill-opacity=".18" stroke="${c}" stroke-width="1.3" stroke-linejoin="round"/><line x1="10.5" y1="26.5" x2="21.5" y2="26.5" stroke="${c}" stroke-width="2" stroke-linecap="round"/><ellipse cx="16" cy="11" rx="5.5" ry="4.5" fill="${c}" fill-opacity=".28"/></svg>`}
+function svgEspadas(sz,c){c=c||'#c8c8c8';return`<svg width="${sz}" height="${sz}" viewBox="0 0 32 32" fill="none"><path d="M16 2 L14.2 19 L16 20.5 L17.8 19 Z" fill="${c}" fill-opacity=".75"/><path d="M16 2 L13 12 L16 9 L19 12 Z" fill="${c}"/><path d="M7 21 C9 18.5 12.5 17.5 16 17.5 C19.5 17.5 23 18.5 25 21" stroke="${c}" stroke-width="1.8" fill="none" stroke-linecap="round"/><path d="M9.5 23 L7 25.5 L7 27 L10.5 27 L13 23.5" stroke="${c}" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M22.5 23 L25 25.5 L25 27 L21.5 27 L19 23.5" stroke="${c}" stroke-width="1.3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><line x1="7" y1="27" x2="25" y2="27" stroke="${c}" stroke-width="1.6" stroke-linecap="round"/></svg>`}
+function svgBastos(sz,c){c=c||'#a07830';return`<svg width="${sz}" height="${sz}" viewBox="0 0 32 32" fill="none"><path d="M15 27 Q13 21 13.5 15 Q12 9 16 4 Q20 9 18.5 15 Q19 21 17 27 Z" fill="${c}" fill-opacity=".35" stroke="${c}" stroke-width="1.5" stroke-linejoin="round"/><ellipse cx="16" cy="5.5" rx="4" ry="3.5" fill="${c}" fill-opacity=".55" stroke="${c}" stroke-width="1"/><ellipse cx="10" cy="16" rx="2.5" ry="2" fill="${c}" fill-opacity=".5"/><ellipse cx="22" cy="16" rx="2.5" ry="2" fill="${c}" fill-opacity=".5"/><line x1="11" y1="27" x2="21" y2="27" stroke="${c}" stroke-width="2" stroke-linecap="round"/></svg>`}
+function svgChart(sz,c){c=c||'#a5b4fc';return`<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>`}
+function svgShield(sz,c){c=c||'#a5b4fc';return`<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`}
+function svgGrid(sz,c){c=c||'#a5b4fc';return`<svg width="${sz}" height="${sz}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>`}
+
+/* ═══ UTILITIES ═══ */
+function validateScore(sA,sB,wt){
+  if(sA===null||sB===null)return{ok:false,why:'pend'};
+  if(isNaN(sA)||isNaN(sB))return{ok:false,why:'nan'};
+  if(sA<0||sA>wt||sB<0||sB>wt)return{ok:false,why:'range'};
+  if(sA===wt&&sB<wt)return{ok:true};
+  if(sB===wt&&sA<wt)return{ok:true};
+  if(sA===wt&&sB===wt)return{ok:false,why:'tie'};
+  return{ok:false,why:'nowinner'};
+}
+function calcPairRows(matchups,results,wt){
+  const m={};
+  matchups.forEach((mu,i)=>{
+    const res=results[i]||{sA:null,sB:null,games:[]};
+    const kA=mu.tA.slice().sort().join('+'),kB=mu.tB.slice().sort().join('+');
+    if(!m[kA])m[kA]={pair:mu.tA,pj:0,v:0,d:0,diff:0,pts:0,tantoDiff:0};
+    if(!m[kB])m[kB]={pair:mu.tB,pj:0,v:0,d:0,diff:0,pts:0,tantoDiff:0};
+    const v=validateScore(res.sA,res.sB,wt);if(!v.ok)return;
+    m[kA].pj++;m[kB].pj++;const df=res.sA-res.sB;m[kA].diff+=df;m[kB].diff-=df;
+    if(res.sA>res.sB){m[kA].v++;m[kA].pts+=3;m[kB].d++;}else{m[kB].v++;m[kB].pts+=3;m[kA].d++;}
+    (res.games||[]).forEach(g=>{if(g&&g.a!=null&&g.b!=null){m[kA].tantoDiff+=(g.a-g.b);m[kB].tantoDiff+=(g.b-g.a);}});
+  });
+  return Object.values(m).sort((a,b)=>b.pts!==a.pts?b.pts-a.pts:b.diff!==a.diff?b.diff-a.diff:b.tantoDiff-a.tantoDiff);
+}
+function calcIndivRows(matchups,results,wt){
+  const players=[...new Set(matchups.flatMap(m=>[...m.tA,...m.tB]))];
+  const pm={};players.forEach(p=>{pm[p]={name:p,pj:0,v:0,d:0,diff:0}});
+  matchups.forEach((mu,i)=>{
+    const res=results[i]||{sA:null,sB:null};const v=validateScore(res.sA,res.sB,wt);if(!v.ok)return;
+    const df=res.sA-res.sB;
+    mu.tA.forEach(p=>{if(pm[p]){pm[p].pj++;pm[p].diff+=df;if(res.sA>res.sB)pm[p].v++;else pm[p].d++;}});
+    mu.tB.forEach(p=>{if(pm[p]){pm[p].pj++;pm[p].diff-=df;if(res.sB>res.sA)pm[p].v++;else pm[p].d++;}});
+  });
+  return Object.values(pm).sort((a,b)=>b.v!==a.v?b.v-a.v:b.diff-a.diff);
+}
+function dStr(d){return d>0?'+'+d:''+d}
+function dCls(d){return d>0?'dp':d<0?'dn':'d0'}
+function ptsCls(p){return p>=9?'p9':p>=6?'p6':p>=3?'p3':'p0'}
+function rankCls(i){return i===0?'r1':i===1?'r2':i===2?'r3':''}
+function ini(n){return n.slice(0,2).toUpperCase()}
+function showWarn(id,msg){
+  const el=document.getElementById(id);if(!el)return;
+  el.textContent=msg;el.style.display='block';
+  clearTimeout(el._t);el._t=setTimeout(()=>el.style.display='none',3200);
+}
+function renderStbPairs(st,elId){
+  const el=document.getElementById(elId);if(!el)return;
+  if(!st.some(s=>s.pj>0)){el.innerHTML='<p class="empty">Introduce resultados para ver la clasificación</p>';return}
+  const showDT=showTantoDiff;
+  const togStyle=showDT?'background:rgba(212,160,23,.18);border-color:rgba(212,160,23,.4);color:var(--goldl);':'';
+  el.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn-sm" style="${togStyle}" onclick="toggleTantoDiff()" title="Mostrar diferencia acumulada de tantos individuales (desempate)">&#8771; Dif. tantos</button></div><table class="stbl"><thead><tr><th>Pareja</th><th class="c">PJ</th><th class="c">V</th><th class="c">D</th><th class="c">Dif. Juegos</th>${showDT?'<th class="c" title="Diferencia de tantos acumulada (desempate)">Dif. Tantos</th>':''}<th class="c">Pts</th></tr></thead><tbody>${
+    st.map((s,i)=>`<tr class="${rankCls(i)}"><td><span class="ptag">${s.pair.join('<span class="amp">&amp;</span>')}</span></td><td class="c">${s.pj}</td><td class="c">${s.v}</td><td class="c">${s.d}</td><td class="c"><span class="${dCls(s.diff)}">${dStr(s.diff)}</span></td>${showDT?`<td class="c"><span class="${dCls(s.tantoDiff||0)}">${dStr(s.tantoDiff||0)}</span></td>`:''}<td class="c"><span class="pts ${ptsCls(s.pts)}">${s.pts}</span></td></tr>`).join('')
+  }</tbody></table>`;
+}
+function renderStbIndiv(st,elId){
+  const el=document.getElementById(elId);if(!el)return;
+  if(!st.some(s=>s.pj>0)){el.innerHTML='<p class="empty">Introduce resultados para ver la clasificación</p>';return}
+  el.innerHTML=`<table class="stbl"><thead><tr><th>Jugador</th><th class="c">PJ</th><th class="c">V</th><th class="c">D</th><th class="c">Dif</th></tr></thead><tbody>${
+    st.map((s,i)=>`<tr class="${rankCls(i)}"><td>${s.name}</td><td class="c">${s.pj}</td><td class="c">${s.v}</td><td class="c">${s.d}</td><td class="c"><span class="${dCls(s.diff)}">${dStr(s.diff)}</span></td></tr>`).join('')
+  }</tbody></table>`;
+}
+function renderPodium(st,elId){
+  const el=document.getElementById(elId);if(!el)return;
+  if(!st.some(s=>s.pj>0)){el.innerHTML='<p class="pod-pend">El podio se formará cuando haya resultados</p>';return}
+  const medals=['&#127941;','&#129352;','&#129353;'];
+  const order=[st[1]?{d:st[1],pc:'pl2',medal:medals[1]}:null,st[0]?{d:st[0],pc:'pl1',medal:medals[0]}:null,st[2]?{d:st[2],pc:'pl3',medal:medals[2]}:null].filter(Boolean);
+  el.innerHTML=`<div class="pod-wrap">${order.map(({d,pc,medal})=>`<div class="pod-pl ${pc}"><div class="pod-av">${ini(d.name)}</div><div class="pod-name">${d.name}</div><div class="pod-stat">${d.v}V·${d.d}D·${dStr(d.diff)}</div><div class="pod-bar">${medal}</div></div>`).join('')}</div>`;
+}
+
+/* ═══ ROUND CARD RENDERER ═══
+   adjCallA   = 'fnName(arg1,arg2'  → onclick="${adjCallA},delta)"  e.g. mtAdj(0,'A',-1)
+   scoreCallA = 'fnName(arg1,arg2'  → oninput="${scoreCallA},this.value)"
+   id         = unique card id for game-detail toggling
+   games      = [{a,b}|null, …] existing per-game scores
+═══════════════════════════════════════════════════════ */
+function renderRoundCard(cfg){
+  const sA=cfg.sA!==null&&cfg.sA!==undefined?cfg.sA:'';
+  const sB=cfg.sB!==null&&cfg.sB!==undefined?cfg.sB:'';
+  const v=validateScore(cfg.sA,cfg.sB,cfg.wt);
+  const aW=v.ok&&cfg.sA===cfg.wt,bW=v.ok&&cfg.sB===cfg.wt;
+  let sTxt='',sCls='';
+  if(v.ok){const w=cfg.sA>cfg.sB?cfg.tA:cfg.tB;sTxt=`Ganan ${w.join(' &amp; ')} (${cfg.sA}&#8211;${cfg.sB})`;sCls=' ok';}
+  const total=(cfg.sA||0)+(cfg.sB||0);
+  const games=cfg.games||[];
+  const tALabel=cfg.tA.join(' & ');const tBLabel=cfg.tB.join(' & ');
+  const legend=`<div class="game-legend"><span class="gl-a">${cfg.tA.join(' &amp; ')}</span><span class="gl-sep">vs</span><span class="gl-b">${cfg.tB.join(' &amp; ')}</span></div>`;
+  const gameRows=Array.from({length:total},(_,i)=>{
+    const g=games[i]||{};
+    return`<div class="game-row"><span class="game-row-n">Juego ${i+1}</span><input type="number" id="g_${cfg.id}_a_${i}" class="sinput game-sinput gs-a" placeholder="–" min="0" max="999" value="${g.a!=null?g.a:''}" oninput="saveGameDetail('${cfg.id}',${i},'a',this.value)"><span class="game-dash">–</span><input type="number" id="g_${cfg.id}_b_${i}" class="sinput game-sinput gs-b" placeholder="–" min="0" max="999" value="${g.b!=null?g.b:''}" oninput="saveGameDetail('${cfg.id}',${i},'b',this.value)"></div>`;
+  }).join('');
+  // tog-wrap always rendered so updateCardGameRows can find it; data-ta/tb store team names
+  const gamesSection=`<div id="tog-wrap-${cfg.id}" data-ta="${tALabel.replace(/"/g,'&quot;')}" data-tb="${tBLabel.replace(/"/g,'&quot;')}" style="${total>0?'':'display:none'}"><button class="card-games-btn" id="tog-btn-${cfg.id}" onclick="toggleGameDetail('${cfg.id}')">&#9660; Tanteo por juego</button><div class="card-games-section" id="gd-${cfg.id}" style="display:none">${legend}<div class="game-rows" id="gr-${cfg.id}">${gameRows}</div></div></div>`;
+  return`<div class="rcard${cfg.final?' rcard-final':''}">
+    <div class="rlabel">${cfg.label}</div>
+    <div class="trow ta"><span class="tname">${cfg.tA.join(' &amp; ')}</span><div class="sctrl"><button class="sbtn" onclick="${cfg.adjCallA},-1)">&#8722;</button><input type="number" id="${cfg.idA}" class="sinput${aW?' win':bW?' los':''}" value="${sA}" min="0" max="${cfg.wt}" placeholder="&#8211;" oninput="${cfg.scoreCallA},this.value)"><button class="sbtn" onclick="${cfg.adjCallA},1)">&#43;</button></div></div>
+    <div class="tvs">vs</div>
+    <div class="trow tb"><span class="tname">${cfg.tB.join(' &amp; ')}</span><div class="sctrl"><button class="sbtn" onclick="${cfg.adjCallB},-1)">&#8722;</button><input type="number" id="${cfg.idB}" class="sinput${bW?' win':aW?' los':''}" value="${sB}" min="0" max="${cfg.wt}" placeholder="&#8211;" oninput="${cfg.scoreCallB},this.value)"><button class="sbtn" onclick="${cfg.adjCallB},1)">&#43;</button></div></div>
+    <div class="rstatus${sCls}" id="${cfg.statusId}">${sTxt}</div>
+    ${gamesSection}
+  </div>`;
+}
+function toggleGameDetail(id){
+  const el=document.getElementById('gd-'+id);if(!el)return;
+  const open=el.style.display!=='none';el.style.display=open?'none':'block';
+  const btn=document.getElementById('tog-btn-'+id);if(btn)btn.textContent=(open?'▼':'▲')+' Tanteo por juego';
+}
+function getResultByCardId(id){
+  if(id.startsWith('mt-'))return MT.results[parseInt(id.slice(3))];
+  if(id.startsWith('grp-')){const p=id.slice(4).split('-');return MT.groups[+p[0]].results[+p[1]];}
+  if(id.startsWith('br-')){const p=id.slice(3).split('-');return MT.bracketRounds[+p[0]].matches[+p[1]];}
+  return null;
+}
+function saveGameDetail(cardId,gameIdx,side,val){
+  const p=val===''?null:parseInt(val,10);
+  const res=getResultByCardId(cardId);if(!res)return;
+  if(!res.games)res.games=[];
+  while(res.games.length<=gameIdx)res.games.push(null);
+  if(!res.games[gameIdx])res.games[gameIdx]={a:null,b:null};
+  res.games[gameIdx][side]=isNaN(p)?null:p;mtSave();
+}
+function updateCardGameRows(cardId,sA,sB,games){
+  const total=(sA||0)+(sB||0);
+  // tog-wrap always exists in the DOM (always rendered, just hidden when total=0)
+  const wrap=document.getElementById('tog-wrap-'+cardId);
+  if(wrap)wrap.style.display=total>0?'block':'none';
+  const grEl=document.getElementById('gr-'+cardId);
+  if(!grEl)return;
+  // Read team names stored as data attributes and refresh legend
+  const tA=wrap.getAttribute('data-ta')||'';
+  const tB=wrap.getAttribute('data-tb')||'';
+  const gdEl=document.getElementById('gd-'+cardId);
+  let lgEl=wrap.querySelector('.game-legend');
+  if(!lgEl&&gdEl){lgEl=document.createElement('div');lgEl.className='game-legend';gdEl.insertBefore(lgEl,grEl);}
+  if(lgEl&&tA)lgEl.innerHTML=`<span class="gl-a">${tA}</span><span class="gl-sep">vs</span><span class="gl-b">${tB}</span>`;
+  grEl.innerHTML=Array.from({length:total},(_,i)=>{
+    const g=(games||[])[i]||{};
+    return`<div class="game-row"><span class="game-row-n">Juego ${i+1}</span><input type="number" id="g_${cardId}_a_${i}" class="sinput game-sinput gs-a" placeholder="–" min="0" max="999" value="${g.a!=null?g.a:''}" oninput="saveGameDetail('${cardId}',${i},'a',this.value)"><span class="game-dash">–</span><input type="number" id="g_${cardId}_b_${i}" class="sinput game-sinput gs-b" placeholder="–" min="0" max="999" value="${g.b!=null?g.b:''}" oninput="saveGameDetail('${cardId}',${i},'b',this.value)"></div>`;
+  }).join('');
+  // Collapse on score change and reset button label
+  if(gdEl)gdEl.style.display='none';
+  const btn=document.getElementById('tog-btn-'+cardId);if(btn)btn.textContent='▼ Tanteo por juego';
+}
+
+/* ═══ TORNEO DATA ═══ */
+const MT_DEF={
+  name:'',players:[],
+  pairMode:'libre',pairs:[],groupsOrder:null,
+  formatType:'liguilla',
+  winTo:5,tantosTo:40,
+  liguillaKnockout:false,liguillaKnockoutSize:4,
+  elimSize:8,
+  numGroups:2,topPerGroup:2,
+  matchups:[],results:[],
+  groups:[],
+  bracketRounds:[],
+  phase:'setup'
+};
+let MT=mtLoad();
+let activeGroupIdx=0;
+function mtLoad(){try{const s=localStorage.getItem('miTorneo2025b');if(s)return Object.assign({},MT_DEF,JSON.parse(s))}catch(e){}return Object.assign({},MT_DEF,{players:[],pairs:[],matchups:[],results:[],groups:[],bracketRounds:[]})}
+function mtSave(){localStorage.setItem('miTorneo2025b',JSON.stringify(MT))}
+
+/* ─ Teams ─ */
+function mtGetTeams(){
+  if(MT.pairMode==='fija')return MT.pairs.map(p=>({players:[p.p1,p.p2].filter(Boolean),label:p.p2?`${p.p1} & ${p.p2}`:p.p1}));
+  return MT.players.map(p=>({players:[p],label:p}));
+}
+
+/* ─ Players ─ */
+function mtAddPlayer(){
+  const inp=document.getElementById('mt-pname');const name=(inp.value||'').trim();if(!name)return;
+  if(MT.players.includes(name)){showWarn('mt-pwarn','Este jugador ya existe');return}
+  MT.players.push(name);inp.value='';mtSave();mtRenderSetup();
+}
+function mtRemovePlayer(idx){
+  const pname=MT.players[idx];
+  const inPair=MT.pairs.findIndex(p=>p.p1===pname||p.p2===pname);
+  if(inPair>=0){if(!confirm(`${pname} está emparejado. ¿Eliminar jugador y su pareja?`))return;MT.pairs.splice(inPair,1);}
+  MT.players.splice(idx,1);mtSave();mtRenderSetup();
+}
+
+/* ─ Pair mode ─ */
+function mtSetPairMode(mode){
+  MT.pairMode=mode;mtSave();
+  document.getElementById('mode-libre').classList.toggle('active',mode==='libre');
+  document.getElementById('mode-fija').classList.toggle('active',mode==='fija');
+  document.getElementById('mode-desc').textContent=mode==='fija'?'Las parejas son fijas durante todo el torneo':'Las parejas se forman libremente cada ronda';
+  document.getElementById('pair-builder-section').style.display=mode==='fija'?'block':'none';
+  mtUpdateFormatoSection();
+  mtRenderSetup();
+}
+
+/* ─ Pairs ─ */
+function mtAddPair(){
+  const p1=document.getElementById('pair-p1').value,p2=document.getElementById('pair-p2').value;
+  if(!p1){showWarn('pair-warn','Selecciona al menos el primer jugador');return}
+  if(p1===p2){showWarn('pair-warn','Los dos jugadores deben ser diferentes');return}
+  const already=MT.pairs.filter(p=>p.p1===p1||p.p2===p1||p.p1===p2||p.p2===p2).length;
+  if(already){showWarn('pair-warn','Uno de estos jugadores ya tiene pareja');return}
+  MT.pairs.push({id:Date.now(),p1,p2:p2||''});
+  document.getElementById('pair-p1').selectedIndex=0;document.getElementById('pair-p2').selectedIndex=0;
+  mtSave();mtRenderSetup();
+}
+function mtRemovePair(id){MT.pairs=MT.pairs.filter(p=>p.id!==id);MT.groupsOrder=null;mtSave();mtRenderSetup();}
+
+/* ─ Format ─ */
+function mtSetFormat(fmt){
+  MT.formatType=fmt;MT.groupsOrder=null;mtSave();
+  ['liguilla','eliminatoria','grupos'].forEach(f=>{
+    const el=document.getElementById('fmt-'+f);if(el)el.classList.toggle('sel',f===fmt);
+    const sub=document.getElementById('fmt-sub-'+f);if(sub)sub.style.display=f===fmt?'block':'none';
+  });
+  if(fmt==='grupos')mtRenderGroupPreview();
+  mtUpdateStartBtn();
+}
+function mtHiPick(prefix,val){
+  document.querySelectorAll('.br-pick').forEach(el=>{
+    if(el.id.startsWith(prefix)){
+      const isThis=el.id===`${prefix}-${val}`;
+      el.style.borderColor=isThis?'rgba(212,160,23,.35)':'rgba(255,255,255,.1)';
+      el.style.background=isThis?'rgba(212,160,23,.12)':'rgba(0,0,0,.15)';
+      el.style.color=isThis?'var(--goldl)':'var(--dim)';
+    }
+  });
+  mtUpdateStartBtn();
+}
+function mtUpdateLiguillaOpts(){
+  const chk=document.getElementById('lig-knockout-chk');
+  const opts=document.getElementById('lig-bracket-opts');
+  if(opts)opts.style.display=chk&&chk.checked?'block':'none';
+}
+
+/* ─ Groups preview ─ */
+function mtRenderGroupPreview(){
+  const teams=mtGetTeams();
+  const g=MT.numGroups;
+  const el=document.getElementById('grp-preview');
+  const info=document.getElementById('grp-info');
+  if(!el)return;
+  if(teams.length<2){el.innerHTML='<p style="color:var(--dim);font-size:.78rem;font-style:italic">Define las parejas primero</p>';return}
+  const order=MT.groupsOrder&&MT.groupsOrder.length===teams.length?MT.groupsOrder:teams.map((_,i)=>i);
+  const groups=Array.from({length:g},(_,i)=>({name:`Grupo ${String.fromCharCode(65+i)}`,teams:[]}));
+  order.forEach((ti,pos)=>{if(ti<teams.length)groups[pos%g].teams.push(teams[ti]);});
+  const totalMatches=groups.reduce((sum,grp)=>sum+grp.teams.length*(grp.teams.length-1)/2,0);
+  const advancing=g*MT.topPerGroup;
+  if(info)info.textContent=`${teams.length} equipos · ${totalMatches} partidas en grupos · ${advancing} clasifican`;
+  el.innerHTML=groups.map(grp=>`<div class="gp-card"><div class="gp-name">${grp.name}</div>${grp.teams.map(t=>`<div class="gp-team">${t.label}</div>`).join('')||'<div class="gp-team" style="color:var(--dim);font-style:italic">Vacío</div>'}</div>`).join('');
+  mtUpdateStartBtn();
+}
+function mtShuffleGroups(){
+  const n=mtGetTeams().length;
+  const idx=Array.from({length:n},(_,i)=>i);
+  for(let i=idx.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}
+  MT.groupsOrder=idx;mtSave();mtRenderGroupPreview();
+}
+function mtUpdateFormatoSection(){
+  const fija=MT.pairMode==='fija';
+  const fmtSec=document.getElementById('formato-section');
+  const libreS=document.getElementById('rondas-libre-section');
+  if(fmtSec)fmtSec.style.display=fija?'block':'none';
+  if(libreS)libreS.style.display=fija?'none':'block';
+  document.getElementById('step-num-ajustes').textContent=fija?'4':'4';
+  mtUpdateFormatSuggestion();
+}
+function mtUpdateFormatSuggestion(){
+  const teams=mtGetTeams();const n=teams.length;
+  const el=document.getElementById('fmt-suggestion');if(!el)return;
+  let suggest='';
+  if(n<2)suggest='&#9888; Necesitas al menos 2 equipos para continuar';
+  else if(n<=4)suggest=`&#128161; Con ${n} equipos: Liguilla o Eliminatoria son ideales`;
+  else if(n<=8)suggest=`&#128161; Con ${n} equipos: Liguilla completa (${n*(n-1)/2} partidas) o 2 grupos de ${Math.ceil(n/2)}`;
+  else if(n<=12)suggest=`&#128161; Con ${n} equipos: Recomendamos ${Math.ceil(n/4)} grupos de ${Math.floor(n/Math.ceil(n/4))}–${Math.ceil(n/Math.ceil(n/4))}`;
+  else suggest=`&#128161; Con ${n} equipos: Usa Por Grupos para organizar el torneo eficientemente`;
+  el.innerHTML=suggest;
+}
+
+/* ─ Rondas libres ─ */
+function mtAddMatchup(){
+  const a1=document.getElementById('mt-a1').value,a2=document.getElementById('mt-a2').value;
+  const b1=document.getElementById('mt-b1').value,b2=document.getElementById('mt-b2').value;
+  const tA=[a1,a2].filter(p=>p&&p!==''),tB=[b1,b2].filter(p=>p&&p!=='');
+  if(tA.length===0){showWarn('mt-mwarn','El Equipo A necesita al menos un jugador');return}
+  if(tB.length===0){showWarn('mt-mwarn','El Equipo B necesita al menos un jugador');return}
+  const all=[...tA,...tB];if(new Set(all).size<all.length){showWarn('mt-mwarn','Un jugador no puede estar en ambos equipos');return}
+  MT.matchups.push({tA,tB});MT.results.push({sA:null,sB:null,games:[]});
+  ['mt-a1','mt-a2','mt-b1','mt-b2'].forEach(id=>{const e=document.getElementById(id);if(e)e.selectedIndex=0});
+  mtSave();mtRenderSetup();
+}
+function mtRemoveMatchup(idx){MT.matchups.splice(idx,1);MT.results.splice(idx,1);mtSave();mtRenderSetup()}
+
+/* ─ Render Setup ─ */
+function mtRenderSetup(){
+  // Name
+  const tn=document.getElementById('mt-tname');if(tn&&tn!==document.activeElement)tn.value=MT.name||'';
+  // winTo, tantosTo
+  const wt=document.getElementById('mt-winto');if(wt&&wt!==document.activeElement)wt.value=MT.winTo;
+  const tt=document.getElementById('mt-tantosto');if(tt&&tt!==document.activeElement)tt.value=MT.tantosTo;
+  // Players
+  const plistEl=document.getElementById('mt-plist');
+  if(plistEl)plistEl.innerHTML=MT.players.length===0?'<span style="color:var(--dim);font-size:.82rem;font-style:italic">Sin jugadores añadidos</span>':MT.players.map((p,i)=>`<span class="pchip">${p}<span class="px" onclick="mtRemovePlayer(${i})">&#10005;</span></span>`).join('');
+  // Pair selects
+  const unpaired=MT.players.filter(p=>!MT.pairs.some(pair=>pair.p1===p||pair.p2===p));
+  const opts=unpaired.map(p=>`<option value="${p}">${p}</option>`).join('');
+  ['pair-p1','pair-p2'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const cur=el.value;el.innerHTML=`<option value="">— Jugador —</option>${opts}`;if(unpaired.includes(cur))el.value=cur;});
+  // Pairs list
+  const pairList=document.getElementById('pair-list');
+  if(pairList)pairList.innerHTML=MT.pairs.length===0?'<span style="color:var(--dim);font-size:.8rem;font-style:italic">Sin parejas formadas</span>':MT.pairs.map(p=>`<span class="pair-chip"><span class="pair-names">${p.p1}</span>${p.p2?`<span class="pair-vs">&amp;</span><span class="pair-names">${p.p2}</span>`:''}<span class="px" onclick="mtRemovePair(${p.id})">&#10005;</span></span>`).join('');
+  // Unpaired warning
+  const uw=document.getElementById('unpaired-warn');
+  if(uw){const u=unpaired.filter(p=>MT.pairMode==='fija');if(u.length>0&&MT.pairMode==='fija'){uw.textContent=`Sin emparejar: ${u.join(', ')}`;uw.style.display='block';}else uw.style.display='none';}
+  // Libre selects
+  mtUpdateLibreSelects();
+  // Libre matchup list
+  const mlistEl=document.getElementById('mt-mlist');
+  if(mlistEl)mlistEl.innerHTML=MT.matchups.length===0?'<span style="color:var(--dim);font-size:.82rem;font-style:italic">Sin rondas definidas</span>':MT.matchups.map((m,i)=>`<div class="mitem"><div class="mi-n"><span class="mi-ta">${m.tA.join(' &amp; ')}</span><span class="mi-sep">vs</span><span class="mi-tb">${m.tB.join(' &amp; ')}</span></div><span class="mi-idx">R${i+1}</span><button class="xbtn" onclick="mtRemoveMatchup(${i})">&#10005;</button></div>`).join('');
+  // Libre knockout chk
+  const lkc=document.getElementById('libre-knockout-chk');if(lkc)lkc.checked=MT.liguillaKnockout;
+  // Format section update
+  mtUpdateFormatoSection();
+  // Groups options
+  const gn=document.getElementById('grupos-n');if(gn&&gn!==document.activeElement)gn.value=MT.numGroups;
+  const gt=document.getElementById('grupos-top');if(gt&&gt!==document.activeElement)gt.value=MT.topPerGroup;
+  if(MT.formatType==='grupos')mtRenderGroupPreview();
+  // Liguilla chk
+  const lc=document.getElementById('lig-knockout-chk');if(lc)lc.checked=MT.liguillaKnockout;
+  mtUpdateLiguillaOpts();
+  // Summary
+  mtUpdateStartBtn();
+  mtUpdateInfoTags();
+}
+function mtUpdateLibreSelects(){
+  const opts=MT.players.map(p=>`<option value="${p}">${p}</option>`).join('');
+  [['mt-a1','— Jugador 1 —'],['mt-b1','— Jugador 1 —'],['mt-a2','— Jugador 2 (opc.) —'],['mt-b2','— Jugador 2 (opc.) —']].forEach(([id,def])=>{
+    const el=document.getElementById(id);if(!el)return;const cur=el.value;el.innerHTML=`<option value="">${def}</option>${opts}`;if(MT.players.includes(cur))el.value=cur;
+  });
+}
+function mtUpdateStartBtn(){
+  const teams=mtGetTeams();
+  let ok=false,hint='';
+  if(MT.pairMode==='libre'){
+    ok=MT.matchups.length>0;hint=ok?'':'Define al menos una ronda para iniciar';
+  } else {
+    if(teams.length<2){hint='Necesitas al menos 2 equipos (parejas) para iniciar';}
+    else if(MT.formatType==='liguilla'){ok=true;}
+    else if(MT.formatType==='eliminatoria'){ok=true;}
+    else if(MT.formatType==='grupos'){
+      const valid=teams.length>=MT.numGroups*2;
+      ok=valid;hint=valid?'':`Necesitas al menos ${MT.numGroups*2} equipos para ${MT.numGroups} grupos`;
+    }
+  }
+  const btn=document.getElementById('mt-startbtn');if(btn)btn.disabled=!ok;
+  const h=document.getElementById('mt-starthint');if(h){h.textContent=hint;h.style.display=hint?'block':'none';}
+}
+function mtUpdateInfoTags(){
+  const el=document.getElementById('mt-info');if(!el)return;
+  const teams=mtGetTeams();
+  let tags=`<span class="itag"><strong>${MT.players.length}</strong> jugadores</span>`;
+  if(MT.pairMode==='fija')tags+=`<span class="itag"><strong>${MT.pairs.length}</strong> parejas</span>`;
+  tags+=`<span class="itag">Primero a <strong>${MT.winTo}</strong> juegos · <strong>${MT.tantosTo}</strong> tantos</span>`;
+  if(MT.pairMode==='fija'){
+    const fmtNames={liguilla:'Liguilla',eliminatoria:'Eliminatoria',grupos:`Grupos (${MT.numGroups})`};
+    tags+=`<span class="itag"><strong>${fmtNames[MT.formatType]||MT.formatType}</strong></span>`;
+  }
+  el.innerHTML=tags;
+}
+
+/* ─ Start / Back / Reset ─ */
+function mtStart(){
+  if(MT.pairMode==='fija'){
+    const teams=mtGetTeams();
+    if(MT.formatType==='liguilla'){
+      // Auto-generate round robin
+      MT.matchups=[];MT.results=[];
+      for(let i=0;i<teams.length;i++)for(let j=i+1;j<teams.length;j++){MT.matchups.push({tA:teams[i].players,tB:teams[j].players});MT.results.push({sA:null,sB:null,games:[]});}
+      MT.groups=[];
+    } else if(MT.formatType==='grupos'){
+      mtBuildGroups(teams);
+      MT.matchups=[];MT.results=[];
+    } else if(MT.formatType==='eliminatoria'){
+      MT.matchups=[];MT.results=[];MT.groups=[];
+      mtInitDirectElim(teams);
+    }
+  }
+  MT.bracketRounds=MT.formatType==='eliminatoria'?MT.bracketRounds:[];
+  MT.phase='playing';mtSave();mtRenderPhase();
+}
+function mtBuildGroups(teams){
+  const g=MT.numGroups;
+  const order=MT.groupsOrder&&MT.groupsOrder.length===teams.length?MT.groupsOrder:teams.map((_,i)=>i);
+  MT.groups=Array.from({length:g},(_,i)=>({name:`Grupo ${String.fromCharCode(65+i)}`,teams:[],matchups:[],results:[]}));
+  order.forEach((ti,pos)=>{if(ti<teams.length)MT.groups[pos%g].teams.push(teams[ti]);});
+  MT.groups.forEach(grp=>{
+    grp.matchups=[];grp.results=[];
+    for(let i=0;i<grp.teams.length;i++)for(let j=i+1;j<grp.teams.length;j++){grp.matchups.push({tA:grp.teams[i].players,tB:grp.teams[j].players});grp.results.push({sA:null,sB:null,games:[]});}
+  });
+}
+function mtInitDirectElim(teams){
+  const sz=Math.min(MT.elimSize,teams.length);
+  // Shuffle
+  const shuffled=teams.slice(0,sz);
+  for(let i=shuffled.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];}
+  // Seed: 1 vs sz, 2 vs sz-1, ...
+  const matches=[];
+  const half=Math.floor(shuffled.length/2);
+  for(let i=0;i<half;i++)matches.push({tA:shuffled[i].players,tB:shuffled[shuffled.length-1-i].players,sA:null,sB:null,games:[]});
+  const roundName=sz>=16?'Ronda de 16':sz>=8?'Cuartos de Final':sz>=4?'Semifinales':'Final';
+  MT.bracketRounds=[{name:roundName,matches}];
+}
+function mtBackToSetup(){
+  const hasMade=MT.results.some(r=>r.sA!==null)||MT.groups.some(g=>g.results.some(r=>r.sA!==null))||MT.bracketRounds.length>0;
+  if(hasMade&&!confirm('¿Volver a configuración? Se borrarán todos los resultados.'))return;
+  MT.phase='setup';MT.matchups=[];MT.results=[];MT.groups=[];MT.bracketRounds=[];mtSave();mtRenderPhase();
+}
+function mtResetResults(){
+  if(!confirm('¿Borrar todos los resultados?'))return;
+  MT.results=MT.matchups.map(()=>({sA:null,sB:null,games:[]}));
+  MT.groups.forEach(g=>{g.results=g.matchups.map(()=>({sA:null,sB:null,games:[]}));});
+  MT.bracketRounds=[];mtSave();mtRenderPlaying();
+}
+
+/* ─ Phase ─ */
+function mtRenderPhase(){
+  if(MT.phase==='playing'){
+    document.getElementById('mt-setup').style.display='none';
+    document.getElementById('mt-playing').style.display='block';
+    mtRenderPlaying();
+  } else {
+    document.getElementById('mt-playing').style.display='none';
+    document.getElementById('mt-setup').style.display='block';
+    mtRenderSetup();
+  }
+}
+
+/* ─ Playing ─ */
+function mtRenderPlaying(){
+  const title=document.getElementById('mt-title');if(title)title.textContent=MT.name||'Mi Torneo';
+  const fmtLabel={liguilla:'Liguilla',eliminatoria:'Eliminatoria directa',grupos:`Por grupos · ${MT.numGroups} grupos`};
+  const pairLabel=MT.pairMode==='fija'?'Parejas fijas':'Parejas libres';
+  const meta=document.getElementById('mt-meta');
+  if(meta)meta.textContent=`${pairLabel} · ${fmtLabel[MT.formatType]||MT.formatType} · Primero a ${MT.winTo} juegos · Juego a ${MT.tantosTo} tantos`;
+
+  // Which sections to show
+  const showLig=(MT.pairMode==='libre')||(MT.pairMode==='fija'&&MT.formatType==='liguilla');
+  const showGrp=(MT.pairMode==='fija'&&MT.formatType==='grupos');
+  const showBrkt=(MT.pairMode==='libre'&&MT.liguillaKnockout)||(MT.pairMode==='fija'&&MT.formatType!=='grupos')||(MT.pairMode==='fija'&&MT.formatType==='grupos');
+  // Eliminatoria directa → bracket already init'd
+  const isElimDirec=(MT.pairMode==='fija'&&MT.formatType==='eliminatoria');
+
+  document.getElementById('play-liguilla').style.display=showLig?'block':'none';
+  document.getElementById('play-grupos').style.display=showGrp?'block':'none';
+  document.getElementById('play-bracket').style.display='block';
+
+  // Clasificación individual y podio solo para parejas libres
+  const showIndiv = MT.pairMode === 'libre';
+  const indivGc = document.getElementById('mt-indiv-gc');
+  const podioGc = document.getElementById('mt-podio-gc');
+  if(indivGc) indivGc.style.display = showIndiv ? 'block' : 'none';
+  if(podioGc) podioGc.style.display = showIndiv ? 'block' : 'none';
+
+  if(showLig){
+    mtRenderRounds();
+    renderStbPairs(calcPairRows(MT.matchups,MT.results,MT.winTo),'mt-pairs');
+    renderStbIndiv(calcIndivRows(MT.matchups,MT.results,MT.winTo),'mt-indiv');
+    renderPodium(calcIndivRows(MT.matchups,MT.results,MT.winTo),'mt-podio');
+  }
+  if(showGrp){mtRenderGroupPhase();}
+  mtRenderBracketSection(isElimDirec);
+}
+function mtRenderRounds(){
+  const rg=document.getElementById('mt-rg');if(!rg)return;
+  rg.innerHTML=MT.matchups.map((m,i)=>{
+    const res=MT.results[i]||{sA:null,sB:null};
+    return renderRoundCard({id:`mt-${i}`,idA:`mtsA${i}`,idB:`mtsB${i}`,statusId:`mtrs${i}`,label:`Ronda ${i+1}`,tA:m.tA,tB:m.tB,sA:res.sA,sB:res.sB,wt:MT.winTo,games:res.games||[],adjCallA:`mtAdj(${i},'A'`,adjCallB:`mtAdj(${i},'B'`,scoreCallA:`mtOnScore(${i},'A'`,scoreCallB:`mtOnScore(${i},'B'`});
+  }).join('');
+}
+function mtOnScore(idx,team,val){
+  const p=val===''?null:parseInt(val,10);
+  if(!MT.results[idx])MT.results[idx]={sA:null,sB:null,games:[]};
+  if(team==='A')MT.results[idx].sA=isNaN(p)?null:p;else MT.results[idx].sB=isNaN(p)?null:p;
+  mtSave();mtUpdateRoundUI(idx);
+  const res=MT.results[idx];
+  updateCardGameRows(`mt-${idx}`,res.sA||0,res.sB||0,res.games||[]);
+  renderStbPairs(calcPairRows(MT.matchups,MT.results,MT.winTo),'mt-pairs');
+  renderStbIndiv(calcIndivRows(MT.matchups,MT.results,MT.winTo),'mt-indiv');
+  renderPodium(calcIndivRows(MT.matchups,MT.results,MT.winTo),'mt-podio');
+  mtUpdateBracketBtn();
+}
+function mtAdj(idx,team,delta){
+  const inp=document.getElementById('mts'+team+idx);if(!inp)return;
+  let cur=inp.value===''?(delta>0?-1:0):parseInt(inp.value,10);
+  inp.value=Math.max(0,Math.min(MT.winTo,cur+delta));mtOnScore(idx,team,String(inp.value));
+}
+function mtUpdateRoundUI(idx){
+  const res=MT.results[idx];const v=validateScore(res.sA,res.sB,MT.winTo);
+  ['A','B'].forEach(t=>{const inp=document.getElementById(`mts${t}${idx}`);if(inp){inp.classList.remove('win','los');if(v.ok)inp.classList.add(res[`s${t}`]===MT.winTo?'win':'los');}});
+  const sd=document.getElementById('mtrs'+idx);
+  if(sd){if(!v.ok){sd.className='rstatus';sd.textContent='';return;}const w=res.sA>res.sB?MT.matchups[idx].tA:MT.matchups[idx].tB;sd.className='rstatus ok';sd.innerHTML=`Ganan ${w.join(' &amp; ')} (${res.sA}&#8211;${res.sB})`;}
+}
+
+/* ─ Group Phase ─ */
+function mtRenderGroupPhase(){
+  const tabsEl=document.getElementById('grp-tabs');
+  const contentEl=document.getElementById('grp-active-content');
+  if(!tabsEl||!contentEl)return;
+  tabsEl.innerHTML=MT.groups.map((g,i)=>{
+    const done=g.matchups.every((_,j)=>validateScore(g.results[j]?.sA,g.results[j]?.sB,MT.winTo).ok);
+    return`<button class="gtab${i===activeGroupIdx?' active':''}" onclick="mtSelectGroup(${i})">${g.name}${done?'<span class="group-done-badge">&#10003;</span>':''}</button>`;
+  }).join('');
+  mtRenderActiveGroup();
+}
+function mtSelectGroup(idx){activeGroupIdx=idx;mtRenderGroupPhase();}
+function mtRenderActiveGroup(){
+  const contentEl=document.getElementById('grp-active-content');if(!contentEl)return;
+  const grp=MT.groups[activeGroupIdx];if(!grp)return;
+  const standings=calcGroupStandings(grp);
+  const showDT=showTantoDiff;
+  const togStyle=showDT?'background:rgba(212,160,23,.18);border-color:rgba(212,160,23,.4);color:var(--goldl);':'';
+  const stblHtml=standings.some(s=>s.pj>0)?`<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn-sm" style="${togStyle}" onclick="toggleTantoDiff()" title="Diferencia de tantos (desempate)">&#8771; Dif. tantos</button></div><table class="stbl"><thead><tr><th>Equipo</th><th class="c">PJ</th><th class="c">V</th><th class="c">D</th><th class="c">Dif. Juegos</th>${showDT?'<th class="c">Dif. Tantos</th>':''}<th class="c">Pts</th></tr></thead><tbody>${standings.map((s,i)=>`<tr class="${rankCls(i)}"><td><span class="ptag">${s.team.players.join('<span class="amp">&amp;</span>')}</span></td><td class="c">${s.pj}</td><td class="c">${s.v}</td><td class="c">${s.d}</td><td class="c"><span class="${dCls(s.diff)}">${dStr(s.diff)}</span></td>${showDT?`<td class="c"><span class="${dCls(s.tantoDiff||0)}">${dStr(s.tantoDiff||0)}</span></td>`:''}<td class="c"><span class="pts ${ptsCls(s.pts)}">${s.pts}</span></td></tr>`).join('')}</tbody></table>`:'<p class="empty" style="padding:16px">Introduce resultados para ver la clasificación</p>';
+  const matchCards=grp.matchups.map((m,j)=>{
+    const res=grp.results[j]||{sA:null,sB:null};
+    return renderRoundCard({id:`grp-${activeGroupIdx}-${j}`,idA:`grp${activeGroupIdx}sA${j}`,idB:`grp${activeGroupIdx}sB${j}`,statusId:`grpst${activeGroupIdx}_${j}`,label:`Partido ${j+1}`,tA:m.tA,tB:m.tB,sA:res.sA,sB:res.sB,wt:MT.winTo,games:res.games||[],adjCallA:`mtGrpAdj(${activeGroupIdx},${j},'A'`,adjCallB:`mtGrpAdj(${activeGroupIdx},${j},'B'`,scoreCallA:`mtGrpScore(${activeGroupIdx},${j},'A'`,scoreCallB:`mtGrpScore(${activeGroupIdx},${j},'B'`});
+  }).join('');
+  contentEl.innerHTML=`<div style="margin-bottom:16px">${stblHtml}</div><div class="rgrid">${matchCards}</div>`;
+}
+function calcGroupStandings(grp){
+  const teams={};
+  grp.teams.forEach(t=>{const k=t.players.join('+');teams[k]={team:t,pj:0,v:0,d:0,diff:0,pts:0,tantoDiff:0};});
+  grp.matchups.forEach((m,j)=>{
+    const res=grp.results[j]||{sA:null,sB:null,games:[]};const v=validateScore(res.sA,res.sB,MT.winTo);if(!v.ok)return;
+    const kA=m.tA.join('+'),kB=m.tB.join('+');if(!teams[kA]||!teams[kB])return;
+    teams[kA].pj++;teams[kB].pj++;const df=res.sA-res.sB;teams[kA].diff+=df;teams[kB].diff-=df;
+    if(res.sA>res.sB){teams[kA].v++;teams[kA].pts+=3;teams[kB].d++;}else{teams[kB].v++;teams[kB].pts+=3;teams[kA].d++;}
+    (res.games||[]).forEach(g=>{if(g&&g.a!=null&&g.b!=null){teams[kA].tantoDiff+=(g.a-g.b);teams[kB].tantoDiff+=(g.b-g.a);}});
+  });
+  return Object.values(teams).sort((a,b)=>b.pts!==a.pts?b.pts-a.pts:b.diff!==a.diff?b.diff-a.diff:b.tantoDiff-a.tantoDiff);
+}
+function mtGrpScore(gIdx,mIdx,team,val){
+  const p=val===''?null:parseInt(val,10);
+  if(!MT.groups[gIdx].results[mIdx])MT.groups[gIdx].results[mIdx]={sA:null,sB:null,games:[]};
+  if(team==='A')MT.groups[gIdx].results[mIdx].sA=isNaN(p)?null:p;else MT.groups[gIdx].results[mIdx].sB=isNaN(p)?null:p;
+  mtSave();mtUpdateGrpMatchUI(gIdx,mIdx);
+  const res=MT.groups[gIdx].results[mIdx];
+  updateCardGameRows(`grp-${gIdx}-${mIdx}`,res.sA||0,res.sB||0,res.games||[]);
+  mtRenderGroupPhase();mtUpdateBracketBtn();
+}
+function mtGrpAdj(gIdx,mIdx,team,delta){
+  const inp=document.getElementById(`grp${gIdx}s${team}${mIdx}`);if(!inp)return;
+  let cur=inp.value===''?(delta>0?-1:0):parseInt(inp.value,10);
+  inp.value=Math.max(0,Math.min(MT.winTo,cur+delta));mtGrpScore(gIdx,mIdx,team,String(inp.value));
+}
+function mtUpdateGrpMatchUI(gIdx,mIdx){
+  const res=MT.groups[gIdx].results[mIdx];const v=validateScore(res.sA,res.sB,MT.winTo);
+  ['A','B'].forEach(t=>{const inp=document.getElementById(`grp${gIdx}s${t}${mIdx}`);if(inp){inp.classList.remove('win','los');if(v.ok)inp.classList.add(res[`s${t}`]===MT.winTo?'win':'los');}});
+}
+function mtGroupsAllDone(){return MT.groups.length>0&&MT.groups.every(g=>g.matchups.every((_,j)=>validateScore(g.results[j]?.sA,g.results[j]?.sB,MT.winTo).ok));}
+
+/* ─ Bracket ─ */
+function mtRenderBracketSection(isElimDirec){
+  const isGrupos=MT.formatType==='grupos'&&MT.pairMode==='fija';
+  const hasKnockout=(MT.pairMode==='libre'&&MT.liguillaKnockout)||(MT.pairMode==='fija'&&MT.formatType==='liguilla'&&MT.liguillaKnockout)||(MT.pairMode==='fija'&&(MT.formatType==='eliminatoria'||MT.formatType==='grupos'));
+  const bracketGc=document.getElementById('play-bracket');if(!bracketGc)return;
+  bracketGc.style.display=hasKnockout?'block':'none';
+  if(!hasKnockout)return;
+  const initWrap=document.getElementById('mt-bracket-initwrap');
+  const alreadyStarted=MT.bracketRounds.length>0;
+  if(initWrap)initWrap.style.display=alreadyStarted?'none':'block';
+  mtUpdateBracketBtn();
+  if(alreadyStarted)mtRenderBracket();
+}
+function mtUpdateBracketBtn(){
+  const isGrupos=MT.formatType==='grupos'&&MT.pairMode==='fija';
+  const isElim=MT.formatType==='eliminatoria'&&MT.pairMode==='fija';
+  const isLig=(MT.pairMode==='libre')||(MT.pairMode==='fija'&&MT.formatType==='liguilla');
+  const btn=document.getElementById('mt-bracket-initbtn');
+  const hint=document.getElementById('mt-bracket-hint');
+  if(!btn)return;
+  if(MT.bracketRounds.length>0){const iw=document.getElementById('mt-bracket-initwrap');if(iw)iw.style.display='none';return;}
+  if(isElim){btn.disabled=false;if(hint)hint.textContent='';return;}
+  if(isGrupos){
+    const done=mtGroupsAllDone();btn.disabled=!done;
+    if(hint)hint.textContent=done?'¡Fase de grupos completa! Genera los cruces eliminatorios':'Completa todos los partidos de grupo para generar los cruces';
+    return;
+  }
+  if(isLig){
+    const pairs=calcPairRows(MT.matchups,MT.results,MT.winTo);
+    const ok=pairs.length>=2;btn.disabled=!ok;
+    const done=ok&&MT.matchups.every((_,i)=>validateScore(MT.results[i].sA,MT.results[i].sB,MT.winTo).ok);
+    if(hint)hint.textContent=!ok?'Se necesitan resultados en la liguilla para generar cruces':done?'¡Liguilla completa! Los cruces se asignarán por clasificación':'Puedes generar los cruces ya (con la clasificación actual)';
+  }
+}
+function mtInitBracket(){
+  if(MT.formatType==='grupos'){
+    // Seed from group standings
+    const advancing=[];
+    MT.groups.forEach(grp=>{
+      const st=calcGroupStandings(grp);
+      st.slice(0,MT.topPerGroup).forEach((s,rank)=>advancing.push({team:s.team,rank,grpName:grp.name}));
+    });
+    // Sort: rank 0 (group winners) first, then rank 1, etc.
+    advancing.sort((a,b)=>a.rank-b.rank);
+    const teams=advancing.map(a=>a.team);
+    mtBuildBracketFromTeams(teams);
+  } else if(MT.formatType==='eliminatoria'){
+    mtRenderBracket();return; // already built in mtStart
+  } else {
+    // Liguilla
+    const pairs=calcPairRows(MT.matchups,MT.results,MT.winTo);
+    const sz=Math.min(MT.liguillaKnockoutSize||4,pairs.length);
+    const teams=pairs.slice(0,sz).map(p=>({players:p.pair}));
+    mtBuildBracketFromTeams(teams);
+  }
+  const iw=document.getElementById('mt-bracket-initwrap');if(iw)iw.style.display='none';
+  mtSave();mtRenderBracket();
+}
+function mtBuildBracketFromTeams(teams){
+  const n=teams.length;if(n<2)return;
+  const half=Math.floor(n/2);
+  const matches=[];
+  for(let i=0;i<half;i++)matches.push({tA:teams[i].players,tB:teams[n-1-i].players,sA:null,sB:null,games:[]});
+  const roundName=n>=8?'Cuartos de Final':n>=4?'Semifinales':'Final';
+  MT.bracketRounds=[{name:roundName,matches}];
+}
+function mtBracketCheckAdvance(){
+  if(MT.bracketRounds.length===0)return;
+  const rIdx=MT.bracketRounds.length-1;
+  const round=MT.bracketRounds[rIdx];
+  if(round.name==='Final')return;
+  const winners=round.matches.map(m=>{const v=validateScore(m.sA,m.sB,MT.winTo);return v.ok?(m.sA>m.sB?m.tA:m.tB):null;});
+  if(winners.some(w=>w===null))return;
+  const nextMatches=[];
+  for(let i=0;i<winners.length;i+=2)if(i+1<winners.length)nextMatches.push({tA:winners[i],tB:winners[i+1],sA:null,sB:null,games:[]});
+  if(!nextMatches.length)return;
+  const nextNames={'Ronda de 16':'Cuartos de Final','Cuartos de Final':'Semifinales','Semifinales':'Final'};
+  const nextName=nextNames[round.name]||'Final';
+  if(MT.bracketRounds.length>rIdx+1)MT.bracketRounds.splice(rIdx+1);
+  MT.bracketRounds.push({name:nextName,matches:nextMatches});
+  mtSave();mtRenderBracket();
+  setTimeout(()=>{const el=document.getElementById('play-bracket');if(el)el.scrollIntoView({behavior:'smooth',block:'end'});},200);
+}
+function mtRenderBracket(){
+  const el=document.getElementById('mt-bracket-rounds');if(!el)return;
+  if(MT.bracketRounds.length===0){el.innerHTML='';return;}
+  const last=MT.bracketRounds[MT.bracketRounds.length-1];
+  let champion=null;
+  if(last.name==='Final'){const fm=last.matches[0];const fv=validateScore(fm.sA,fm.sB,MT.winTo);if(fv.ok)champion=fm.sA>fm.sB?fm.tA:fm.tB;}
+  const champBox=document.getElementById('mt-champion-box');
+  if(champBox){
+    if(champion){champBox.style.display='block';champBox.innerHTML=`<div class="champion-box"><span class="champ-ico">&#127942;</span><div class="champ-name">${champion.join(' &amp; ')}</div><div class="champ-lbl">Campeones</div></div>`;}
+    else champBox.style.display='none';
+  }
+  el.innerHTML=MT.bracketRounds.map((round,rIdx)=>`<div style="margin-bottom:${round.name==='Final'?0:24}px">
+    <span class="bracket-lbl">${round.name}</span>
+    <div class="${round.name==='Final'?'':'rgrid'}">
+      ${round.matches.map((m,mIdx)=>renderRoundCard({id:`br-${rIdx}-${mIdx}`,idA:`brsA${rIdx}_${mIdx}`,idB:`brsB${rIdx}_${mIdx}`,statusId:`brst${rIdx}_${mIdx}`,label:round.name==='Final'?'Gran Final':`Partido ${mIdx+1}`,tA:m.tA,tB:m.tB,sA:m.sA,sB:m.sB,wt:MT.winTo,final:round.name==='Final',games:m.games||[],adjCallA:`mtBrAdj(${rIdx},${mIdx},'A'`,adjCallB:`mtBrAdj(${rIdx},${mIdx},'B'`,scoreCallA:`mtBrScore(${rIdx},${mIdx},'A'`,scoreCallB:`mtBrScore(${rIdx},${mIdx},'B'`})).join('')}
+    </div>
+  </div>`).join('');
+}
+function mtBrScore(rIdx,mIdx,team,val){
+  const p=val===''?null:parseInt(val,10);
+  const m=MT.bracketRounds[rIdx].matches[mIdx];
+  if(team==='A')m.sA=isNaN(p)?null:p;else m.sB=isNaN(p)?null:p;
+  mtSave();
+  updateCardGameRows(`br-${rIdx}-${mIdx}`,m.sA||0,m.sB||0,m.games||[]);
+  const v=validateScore(m.sA,m.sB,MT.winTo);
+  ['A','B'].forEach(t=>{const inp=document.getElementById(`brs${t}${rIdx}_${mIdx}`);if(inp){inp.classList.remove('win','los');if(v.ok)inp.classList.add(m[`s${t}`]===MT.winTo?'win':'los');}});
+  const sd=document.getElementById(`brst${rIdx}_${mIdx}`);
+  if(sd){
+    if(!v.ok){sd.className='rstatus';sd.innerHTML='';return;}
+    const w=m.sA>m.sB?m.tA:m.tB;sd.className='rstatus ok';sd.innerHTML=`Ganan ${w.join(' &amp; ')} (${m.sA}&#8211;${m.sB})`;
+    if(MT.bracketRounds[rIdx].name==='Final'){const cb=document.getElementById('mt-champion-box');if(cb){cb.style.display='block';cb.innerHTML=`<div class="champion-box"><span class="champ-ico">&#127942;</span><div class="champ-name">${w.join(' &amp; ')}</div><div class="champ-lbl">Campeones</div></div>`;}}
+  }
+  mtBracketCheckAdvance();
+}
+function mtBrAdj(rIdx,mIdx,team,delta){
+  const inp=document.getElementById(`brs${team==='A'?'A':'B'}${rIdx}_${mIdx}`);if(!inp)return;
+  let cur=inp.value===''?(delta>0?-1:0):parseInt(inp.value,10);
+  inp.value=Math.max(0,Math.min(MT.winTo,cur+delta));mtBrScore(rIdx,mIdx,team,String(inp.value));
+}
+
+/* ═══ HISTÓRICO ═══ */
+let HIST=histLoad();let histResOpen=false;
+function histLoad(){try{const s=localStorage.getItem('histPartidas');if(s)return JSON.parse(s)}catch(e){}return{matches:[]}}
+function histSave(){localStorage.setItem('histPartidas',JSON.stringify(HIST))}
+function histCalcPairs(){
+  const m={};
+  HIST.matches.forEach(match=>{
+    const kA=match.tA.slice().sort().join('+'),kB=match.tB.slice().sort().join('+');
+    if(!m[kA])m[kA]={pair:match.tA,pj:0,v:0,e:0,d:0,diff:0,pts:0,tantoDiff:0};
+    if(!m[kB])m[kB]={pair:match.tB,pj:0,v:0,e:0,d:0,diff:0,pts:0,tantoDiff:0};
+    m[kA].pj++;m[kB].pj++;const df=match.sA-match.sB;m[kA].diff+=df;m[kB].diff-=df;
+    if(match.sA>match.sB){m[kA].v++;m[kA].pts+=3;m[kB].d++;}else if(match.sB>match.sA){m[kB].v++;m[kB].pts+=3;m[kA].d++;}else{m[kA].e++;m[kA].pts+=1;m[kB].e++;m[kB].pts+=1;}
+    (match.games||[]).forEach(g=>{if(g&&g.a!=null&&g.b!=null){m[kA].tantoDiff+=(g.a-g.b);m[kB].tantoDiff+=(g.b-g.a);}});
+  });
+  return Object.values(m).sort((a,b)=>b.pts!==a.pts?b.pts-a.pts:b.diff!==a.diff?b.diff-a.diff:b.tantoDiff-a.tantoDiff);
+}
+function histCalcIndiv(){
+  const pm={};
+  HIST.matches.forEach(match=>{
+    [...match.tA,...match.tB].forEach(p=>{if(!pm[p])pm[p]={name:p,pj:0,v:0,e:0,d:0,diff:0}});
+    const df=match.sA-match.sB;
+    match.tA.forEach(p=>{pm[p].pj++;pm[p].diff+=df;if(match.sA>match.sB)pm[p].v++;else if(match.sA<match.sB)pm[p].d++;else pm[p].e++;});
+    match.tB.forEach(p=>{pm[p].pj++;pm[p].diff-=df;if(match.sB>match.sA)pm[p].v++;else if(match.sB<match.sA)pm[p].d++;else pm[p].e++;});
+  });
+  return Object.values(pm).sort((a,b)=>b.v!==a.v?b.v-a.v:b.diff-a.diff);
+}
+function histGetPlayers(){return[...new Set(HIST.matches.flatMap(m=>[...m.tA,...m.tB]))]}
+function hAdj(id,delta){const inp=document.getElementById(id);if(!inp)return;inp.value=Math.max(0,(parseInt(inp.value)||0)+delta);histUpdateGameRows();}
+function histUpdateGameRows(){
+  const sA=parseInt(document.getElementById('hist-sA').value)||0;const sB=parseInt(document.getElementById('hist-sB').value)||0;const total=sA+sB;
+  const section=document.getElementById('hist-game-section');const container=document.getElementById('hist-game-rows');if(!container||!section)return;
+  const old=[];for(let i=0;i<50;i++){const gA=document.getElementById('hist-gA'+i),gB=document.getElementById('hist-gB'+i);old.push(gA&&gB?{a:gA.value,b:gB.value}:{a:'',b:''});}
+  container.innerHTML='';
+  for(let i=0;i<total;i++){const o=old[i]||{a:'',b:''};const div=document.createElement('div');div.className='game-row';div.innerHTML=`<span class="game-row-n">Juego ${i+1}</span><input type="number" id="hist-gA${i}" class="sinput game-sinput" placeholder="&#8211;" min="0" max="999" value="${o.a}"><span class="game-dash">&#8211;</span><input type="number" id="hist-gB${i}" class="sinput game-sinput" placeholder="&#8211;" min="0" max="999" value="${o.b}">`;container.appendChild(div);}
+  section.style.display=total>0?'block':'none';
+}
+function histGetGameData(){
+  const sA=parseInt(document.getElementById('hist-sA').value)||0;const sB=parseInt(document.getElementById('hist-sB').value)||0;const total=sA+sB;const games=[];let hasAny=false;
+  for(let i=0;i<total;i++){const gA=document.getElementById('hist-gA'+i),gB=document.getElementById('hist-gB'+i);if(gA&&gB&&(gA.value!==''||gB.value!=='')){games.push({a:parseInt(gA.value)||0,b:parseInt(gB.value)||0});hasAny=true;}else games.push(null);}
+  return hasAny?games:null;
+}
+function histToggleGames(id){const el=document.getElementById('hmg-'+id);if(el)el.classList.toggle('open');}
+function histAddMatch(){
+  const a1=(document.getElementById('hist-a1').value||'').trim();const a2=(document.getElementById('hist-a2').value||'').trim();
+  const b1=(document.getElementById('hist-b1').value||'').trim();const b2=(document.getElementById('hist-b2').value||'').trim();
+  const sA=parseInt(document.getElementById('hist-sA').value)||0;const sB=parseInt(document.getElementById('hist-sB').value)||0;
+  const date=document.getElementById('hist-date').value||new Date().toISOString().slice(0,10);
+  const tA=[a1,a2].filter(Boolean),tB=[b1,b2].filter(Boolean);
+  if(tA.length===0){showWarn('hist-fwarn','Añade al menos un jugador al Equipo A');return}
+  if(tB.length===0){showWarn('hist-fwarn','Añade al menos un jugador al Equipo B');return}
+  if(new Set([...tA,...tB]).size<tA.length+tB.length){showWarn('hist-fwarn','Un jugador no puede estar en ambos equipos');return}
+  const games=histGetGameData();
+  HIST.matches.unshift({id:Date.now(),date,tA,tB,sA,sB,games});histSave();
+  ['hist-a1','hist-a2','hist-b1','hist-b2'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});
+  const gc=document.getElementById('hist-game-rows');if(gc)gc.innerHTML='';
+  const gs=document.getElementById('hist-game-section');if(gs)gs.style.display='none';
+  histRender();
+}
+function histDeleteMatch(id){if(!confirm('¿Eliminar esta partida del historial?'))return;HIST.matches=HIST.matches.filter(m=>m.id!==id);histSave();histRender();}
+function histToggleResults(){
+  histResOpen=!histResOpen;
+  document.getElementById('hist-res-panel').classList.toggle('open',histResOpen);
+  document.getElementById('hist-resbtn').classList.toggle('open',histResOpen);
+  document.getElementById('hist-chev').classList.toggle('open',histResOpen);
+  if(histResOpen)histRenderResults();
+}
+function histFmtDate(iso){
+  const today=new Date().toISOString().slice(0,10);const yest=new Date(Date.now()-86400000).toISOString().slice(0,10);
+  if(iso===today)return'Hoy';if(iso===yest)return'Ayer';
+  const d=new Date(iso+'T12:00:00');const m=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];return`${d.getDate()} ${m[d.getMonth()]}`;
+}
+function histRenderList(){
+  const el=document.getElementById('hist-list');if(!el)return;
+  const cnt=document.getElementById('hist-count');if(cnt)cnt.textContent=HIST.matches.length>0?`${HIST.matches.length} partida${HIST.matches.length!==1?'s':''}` :'';
+  if(HIST.matches.length===0){el.innerHTML='<p class="empty">No hay partidas registradas todavía</p>';return}
+  el.innerHTML=HIST.matches.map(m=>{
+    const aW=m.sA>m.sB,bW=m.sB>m.sA,isDraw=m.sA===m.sB;
+    const hasGames=m.games&&m.games.some(g=>g!==null);
+    const gBtn=hasGames?`<button class="hm-gbtn" onclick="histToggleGames(${m.id})">&#9660; detalle</button>`:'';
+    const gDet=hasGames?`<div class="hm-gdet" id="hmg-${m.id}">${m.games.map((g,i)=>g?`<span class="game-chip">J${i+1}: ${g.a}&#8211;${g.b}</span>`:'').join('')}</div>`:'';
+    return`<div class="hmatch"><div style="display:flex;align-items:center;gap:10px;width:100%;min-width:0"><span class="hm-date">${histFmtDate(m.date)}</span><div class="hm-body"><span class="hm-ta${!aW&&!isDraw?' loser':''}">${m.tA.join(' &amp; ')}</span><span class="hm-score${isDraw?' draw':''}">${m.sA} &#8211; ${m.sB}</span><span class="hm-tb${!bW&&!isDraw?' loser':''}">${m.tB.join(' &amp; ')}</span></div>${gBtn}<button class="hm-xbtn" onclick="histDeleteMatch(${m.id})">&#10005;</button></div>${gDet}</div>`;
+  }).join('');
+}
+function histRenderResults(){
+  const hasData=HIST.matches.length>0;const pairsSt=histCalcPairs();const indivSt=histCalcIndiv();
+  const pEl=document.getElementById('hist-pairs');
+  if(pEl){if(!hasData){pEl.innerHTML='<p class="empty">Registra partidas para ver estadísticas</p>';}
+  else{const showDT=showTantoDiff;const ts=showDT?'background:rgba(212,160,23,.18);border-color:rgba(212,160,23,.4);color:var(--goldl);':'';
+  pEl.innerHTML=`<div style="display:flex;justify-content:flex-end;margin-bottom:8px"><button class="btn-sm" style="${ts}" onclick="toggleTantoDiff()" title="Diferencia de tantos (desempate)">&#8771; Dif. tantos</button></div><table class="stbl"><thead><tr><th>Pareja</th><th class="c">PJ</th><th class="c">V</th><th class="c">E</th><th class="c">D</th><th class="c">Dif. Juegos</th>${showDT?'<th class="c">Dif. Tantos</th>':''}<th class="c">Pts</th></tr></thead><tbody>${pairsSt.map((s,i)=>`<tr class="${rankCls(i)}"><td><span class="ptag">${s.pair.join('<span class="amp">&amp;</span>')}</span></td><td class="c">${s.pj}</td><td class="c">${s.v}</td><td class="c"><span class="emp">${s.e}</span></td><td class="c">${s.d}</td><td class="c"><span class="${dCls(s.diff)}">${dStr(s.diff)}</span></td>${showDT?`<td class="c"><span class="${dCls(s.tantoDiff||0)}">${dStr(s.tantoDiff||0)}</span></td>`:''}<td class="c"><span class="pts ${ptsCls(s.pts)}">${s.pts}</span></td></tr>`).join('')}</tbody></table>`;}}
+  const iEl=document.getElementById('hist-indiv');
+  if(iEl){if(!hasData){iEl.innerHTML='<p class="empty">Registra partidas para ver estadísticas</p>';}
+  else iEl.innerHTML=`<table class="stbl"><thead><tr><th>Jugador</th><th class="c">PJ</th><th class="c">V</th><th class="c">E</th><th class="c">D</th><th class="c">Dif</th></tr></thead><tbody>${indivSt.map((s,i)=>`<tr class="${rankCls(i)}"><td>${s.name}</td><td class="c">${s.pj}</td><td class="c">${s.v}</td><td class="c"><span class="emp">${s.e}</span></td><td class="c">${s.d}</td><td class="c"><span class="${dCls(s.diff)}">${dStr(s.diff)}</span></td></tr>`).join('')}</tbody></table>`;}
+  renderPodium(indivSt,'hist-podio');
+}
+function histUpdateDatalist(){const dl=document.getElementById('hist-dl');if(!dl)return;dl.innerHTML=histGetPlayers().map(p=>`<option value="${p}">`).join('');}
+function histRender(){histRenderList();histUpdateDatalist();if(histResOpen)histRenderResults();}
+
+/* ═══ TABS ═══ */
+function switchTab(id){
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tnav').forEach(b=>{b.classList.remove('active');b.classList.remove('active-hist')});
+  document.getElementById('tab-'+id).classList.add('active');
+  const btn=document.getElementById('tnav-'+id);if(btn)btn.classList.add(id==='hist'?'active-hist':'active');
+  localStorage.setItem('activeTab',id);window.scrollTo({top:0,behavior:'instant'});
+}
+
+/* ═══ SUITS ═══ */
+function renderSuits(){
+  [['tnav-mt-ico',svgOros(15,'#d4a017')],['tnav-hist-ico',svgCopas(15,'#c0392b')]].forEach(([id,svg])=>{const e=document.getElementById(id);if(e)e.innerHTML=svg});
+  [['mt-ico-r',svgEspadas(26,'#d0d0d0')],['mt-ico-p',svgOros(26,'#d4a017')],['mt-ico-i',svgCopas(26,'#c0392b')],['mt-ico-pod',svgBastos(26,'#b09050')],['mt-ico-bracket',svgShield(26,'#a5b4fc')],['mt-ico-grp',svgGrid(26,'#a5b4fc')]].forEach(([id,svg])=>{const e=document.getElementById(id);if(e)e.innerHTML=svg});
+  [['hist-ico-form',svgBastos(26,'#b09050')],['hist-ico-list',svgEspadas(26,'#d0d0d0')],['hist-ico-p',svgOros(26,'#a5b4fc')],['hist-ico-i',svgCopas(26,'#a5b4fc')],['hist-ico-pod',svgBastos(26,'#a5b4fc')],['hist-res-ico',svgChart(18,'#a5b4fc')]].forEach(([id,svg])=>{const e=document.getElementById(id);if(e)e.innerHTML=svg});
+  [['hc1',svgCopas(30,'#fff')],['hc2',svgCopas(30,'#fff')],['hc3',svgEspadas(30,'#fff')],['hc4',svgEspadas(30,'#fff')]].forEach(([id,svg])=>{const e=document.getElementById(id);if(e)e.innerHTML=svg});
+}
+
+/* ═══ TANTO DIFF TOGGLE ═══ */
+let showTantoDiff=false;
+function toggleTantoDiff(){
+  showTantoDiff=!showTantoDiff;
+  // Re-render all currently visible pair standings
+  const playLig=document.getElementById('play-liguilla');
+  if(playLig&&playLig.style.display!=='none'){
+    renderStbPairs(calcPairRows(MT.matchups,MT.results,MT.winTo),'mt-pairs');
+  }
+  const playGrp=document.getElementById('play-grupos');
+  if(playGrp&&playGrp.style.display!=='none'){mtRenderActiveGroup();}
+  const histPanel=document.getElementById('hist-res-panel');
+  if(histPanel&&histPanel.classList.contains('open')){histRenderResults();}
+}
+
+/* ═══ INIT ═══ */
+renderSuits();
+mtRenderPhase();
+const hDateEl=document.getElementById('hist-date');if(hDateEl&&!hDateEl.value)hDateEl.value=new Date().toISOString().slice(0,10);
+histUpdateGameRows();histRender();
+const savedTab=localStorage.getItem('activeTab');if(savedTab&&savedTab!=='mt')switchTab(savedTab);
+</script>
+</body>
+</html>
